@@ -12,12 +12,11 @@ library(forecast)
 
  server = function(input, output) {
   dofit = reactive({
-   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, MAorder=input$MAorder)
+   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder)
    else if (input$source == "fullusa" & input$excl != "no") 
-        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, MAorder=input$MAorder)
-   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, MAorder=input$MAorder)
-   list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29, 
-        wald.trend=NA)
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, Difforder=input$Difforder, MAorder=input$MAorder)
+   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder)
+   list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
   output$traj = renderPlot({
    ans = dofit()

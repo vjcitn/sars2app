@@ -1,5 +1,0 @@
- basedate = "2020-03-15" # data prior to this date are dropped completely
- lookback_days = 29 # from present date
- if (!exists("nyd"))nyd = nytimes_state_data() # cumulative
- if (!exists("jhu")) jhu = enriched_jhu_data() # cumulative
- allst = sort(unique(nyd$state))

@@ -37,7 +37,7 @@ Code derived from the ", a(href="https://seandavi.github.io/sars2pack", "sars2pa
 See 'About' tab for additional details."),
     selectInput("source", "source", choices=c("fullusa", allst), selected="fullusa"),
     radioButtons("excl", "exclude from fullusa", choices=c("no", "New York", "Washington"), selected="no"),
-    numericInput("MAorder", "MA order", min=1, max=4, value=2), # choices=c("1", "2"), selected="2"),
+    numericInput("MAorder", "MA order", min=1, max=4, value=3), # choices=c("1", "2"), selected="2"),
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
     width=3),
@@ -59,11 +59,8 @@ be fit for any US state.  The data are generated using `nytimes_state_data()`
 in sars2pack."),
       helpText("Tab 'traj' is a plot of the last 29 days of incidence reports
 with a trace of the time series model as selected using the input controls."),
-      helpText("Tab 'rept' reports statistics from the `arima` function for
+      helpText("Tab 'rept' reports statistics from the `forecast::Arima` function for
 the selected model."),
-      helpText("The trigonometric component of the model is inspired by ", 
-a(href="http://webpopix.org/covidix19.html#parameter-estimation-and-model-selection", "work of"),
-" Marc Lavielle.  The modeling used in this app is however completely elementary and uses only base R.")
       )
      )
     )

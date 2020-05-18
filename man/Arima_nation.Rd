@@ -8,7 +8,7 @@ Arima_nation(
   ejhu,
   alp3 = "USA",
   MAorder = 2,
-  trend = "linear",
+  Difforder = 1,
   basedate = "2020-03-15",
   lookback_days = 29,
   ARorder = 0
@@ -21,7 +21,7 @@ Arima_nation(
 
 \item{MAorder}{numeric(1) order of moving average component}
 
-\item{trend}{character(1) if "linear" differencing order for ARIMA=1, else 2}
+\item{Difforder}{numeric(1) differencing order d of ARIMA(p,d,q)}
 
 \item{basedate}{character(1) used by lubridate::as_date to filter away all earlier records}
 

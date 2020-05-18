@@ -74,7 +74,7 @@ form_inc_nation = function(src, regtag) {
 #' @param src a tibble as returned by nytimes_state_data() or jhu_us_data()
 #' @param state.in character(1) state name
 #' @param MAorder numeric(1) order of moving average component
-#' @param trend character(1) if "linear" differencing order for ARIMA=1, else 2
+#' @param Difforder numeric(1) order of differencing d in ARIMA(p,d,q)
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in src
 #' @param ARorder order of autoregressive component
@@ -90,18 +90,18 @@ form_inc_nation = function(src, regtag) {
 #' plot(lkny2)
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=2, 
-   trend="linear", basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
    cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in)
    .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
-      trend=trend, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
    }
 
 #' Use Rob Hyndman's forecast package to estimate drift in ARIMA models
 #' @param ejhu a tibble as returned by `enriched_jhu_data()`
 #' @param alp3 character(1) alpha3Code value for country
 #' @param MAorder numeric(1) order of moving average component
-#' @param trend character(1) if "linear" differencing order for ARIMA=1, else 2
+#' @param Difforder numeric(1) differencing order d of ARIMA(p,d,q)
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in ejhu
 #' @param ARorder order of autoregressive component
@@ -113,36 +113,34 @@ Arima_by_state = function(src, state.in="New York", MAorder=2,
 #' plot(lkus)
 #' @export
 Arima_nation = function(ejhu, alp3="USA", MAorder=2,
-   trend="linear", basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3)
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
-      trend=trend, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
    }
 
 .Arima_inc = function(ibyd, state.in="New York", MAorder=2, 
-   trend="linear", basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
    iuse = trim_from(ibyd, basedate)
    full29 = tail(ibyd$count,lookback_days)
    dates29 = tail(ibyd$date,lookback_days)
    nlb=lookback_days-1
    time = (0:nlb)/nlb
 #
-# interactive selection of quadratic or linear trend, MA order 
+# interactive selection of  MA order 
 #
-   difforder = ifelse(trend=="linear", 1, 2)
    MAord2use = MAorder
 #
-# full basis matrix, which is filtered below to reduce trig order or trend type
 
    origin = max(ibyd$date)-lookback_days+1
    time.from.origin = as.numeric(dates29-origin)
    tsfull = ts(full29, freq=1)
-   Arima.full = Arima(tsfull, order=c(ARorder,difforder,MAord2use), include.drift=TRUE)
+   Arima.full = Arima(tsfull, order=c(ARorder,Difforder,MAord2use), include.drift=TRUE)
    pr = fitted.values(forecast(Arima.full))
    ans = list(fit=Arima.full, pred=pr, tsfull=tsfull, dates29=dates29, time.from.origin=time.from.origin,
         call=match.call(),
-        state=state.in, origin=as_date(origin))
+        state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder)
    class(ans) = "Arima_sars2pack"
    ans
 }
@@ -162,16 +160,18 @@ plot.Arima_sars2pack = function(x, y, ...) {
  x_ = x$origin+x$time.from.origin
  plot(x_, y_, pch=19, xlab="date", ylab="incidence", ...)
  lines(x$origin+x$time.from.origin, x$pred)
- slo = coef(x$fit)["drift"]
- y1 = x$pred[29]
- y0 = y1 + slo*(-as.numeric(x$origin)-28) # x$time.from.origin[29] = 28
- abline(y0, slo, lty=2, lwd=2)
- se = sqrt(x$fit$var.coef["drift", "drift"])
- y1b = slo*(14+as.numeric(x$origin))+y0
- y0p = y1b + (slo+1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
- y0m = y1b + (slo-1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
- abline(y0p, slo+1.96*se, lty=3, col="gray")
- abline(y0m, slo-1.96*se, lty=3, col="gray")
+ if (x$Difforder==1) {
+  slo = coef(x$fit)["drift"]
+  y1 = x$pred[29]
+  y0 = y1 + slo*(-as.numeric(x$origin)-28) # x$time.from.origin[29] = 28
+  abline(y0, slo, lty=2, lwd=2)
+  se = sqrt(x$fit$var.coef["drift", "drift"])
+  y1b = slo*(14+as.numeric(x$origin))+y0
+  y0p = y1b + (slo+1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
+  y0m = y1b + (slo-1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
+  abline(y0p, slo+1.96*se, lty=3, col="gray")
+  abline(y0m, slo-1.96*se, lty=3, col="gray")
+ }
 }
 
 #' fit ARIMA model to US data dropping one state
@@ -179,7 +179,7 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' @param src_st tibble for state level data like that of nytimes_state_data()
 #' @param state.in character(1) state name
 #' @param MAorder numeric(1) order of moving average component
-#' @param trend character(1) if "linear" differencing order for ARIMA=1, else 2
+#' @param Difforder numeric(1) differencing order d of ARIMA(p,d,q)
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in src
 #' @param ARorder order of autoregressive component
@@ -204,17 +204,17 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' par(opar)
 #' @export
 Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2, 
-   trend="linear", basedate="2020-03-15", lookback_days=29, ARorder=0) {
-   nat = Arima_nation(src_us, MAorder=MAorder, trend=trend, basedate=basedate,
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
          lookback_days=lookback_days, ARorder=ARorder)
-   st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, trend=trend, basedate=basedate,
+   st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
          lookback_days=lookback_days, ARorder=ARorder)
    cbyd_shim = dplyr::filter(src_st,  # shim
             date >= basedate & subset=="confirmed" & state==state.in)
    ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in)
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(st$tsfull)
    .Arima_inc(ibyd_shim, state.in=state.in, MAorder=MAorder,
-      trend=trend, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
    }
 
 #' full incidence for contiguous states
@@ -227,11 +227,11 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 #' plot(cont)
 #' @export
 Arima_contig_states = function(src, state.in="All contig", MAorder=2, 
-   trend="linear", basedate="2020-03-15", lookback_days=29, ARorder=0,
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0,
    contig_vec = contig_states_twolet()) {
    cbyd = dplyr::filter(src, date >= basedate & 
        subset=="confirmed" & state %in% contig_vec)
    ibyd = form_inc_state(cbyd, regtag=state.in)
    .Arima_inc(ibyd, state.in="all", MAorder=MAorder,
-      trend=trend, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
    }
