@@ -1,0 +1,22 @@
+ basedate = "2020-03-15" # data prior to this date are dropped completely
+ lookback_days = 29 # from present date
+ nyd = nytimes_state_data() # cumulative
+ allst = sort(unique(nyd$state))
+# private
+make_cumul_events = function(count, dates, alpha3="USA", source="NYT", regtag=NA) {
+    ans = list(count = count, dates = dates)
+    attr(ans, "ProvinceState") = regtag
+    attr(ans, "source") = source
+    attr(ans, "alpha3") = alpha3
+    attr(ans, "dtype") = "cumulative"
+    class(ans) = c("cumulative_events", "covid_events")
+    ans 
+}
+form_inc = function(src, regtag) {
+ fullsumm = src %>% 
+  select(state,date,count) %>% group_by(date) %>% 
+   summarise(count=sum(count))  # counts by date collapsed over states
+ thecum = make_cumul_events(count=fullsumm$count, dates=fullsumm$date, regtag=regtag)
+ form_incident_events(thecum)
+}
+

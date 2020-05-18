@@ -1,2 +1,1 @@
-# sars2app
-thinned out for tsapp only
+sars2app -- thinned out sars2pack for sake of shinyapps.io covidTS app
