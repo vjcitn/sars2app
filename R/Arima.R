@@ -1,4 +1,8 @@
 #' provide vector of contiguous US state names and DC
+#' @importFrom graphics abline
+#' @importFrom stats coef fitted.values
+#' @import dplyr
+#' @import magrittr
 #' @export
 contig_states_dc = function() c("Alabama", "Arizona", "Arkansas", "California", "Colorado", 
 "Connecticut", "Delaware", "District of Columbia", "Florida", 
@@ -219,6 +223,7 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 
 #' full incidence for contiguous states
 #' @inheritParams Arima_drop_state
+#' @param src tibble for state level data like that of nytimes_state_data()
 #' @param contig_vec character() vector of tokens for subsetting src
 #' @examples
 #' usd = usa_facts_data()

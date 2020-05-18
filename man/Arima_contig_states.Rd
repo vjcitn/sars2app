@@ -16,6 +16,8 @@ Arima_contig_states(
 )
 }
 \arguments{
+\item{src}{tibble for state level data like that of nytimes_state_data()}
+
 \item{state.in}{character(1) state name}
 
 \item{MAorder}{numeric(1) order of moving average component}

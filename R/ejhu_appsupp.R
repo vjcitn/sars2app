@@ -118,13 +118,6 @@ cumulative_events_ejhu = function(src, eventtype = "confirmed",
 #' cusa = trim_from(cusa, "2020-03-01")
 #' iusa = form_incident_events(cusa)
 #' plot(iusa)
-#' gt = R0::generation.time("gamma", c(3.5, 4.8))
-#' est1 = R0::estimate.R( iusa$count, GT=gt,
-#'    t=iusa$dates, begin=iusa$dates[1], end=iusa$dates[length(iusa$dates)],
-#'    methods="EG")
-#' est1
-#' plot2(est1)
-#' plotfit2(est1)
 #' @export
 form_incident_events = function(cum) {
  stopifnot(inherits(cum, "cumulative_events"))

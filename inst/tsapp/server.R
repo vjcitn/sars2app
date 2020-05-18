@@ -26,6 +26,22 @@ library(forecast)
     ans = dofit()
     ans$fit
    })
+  output$meta.rept = renderPrint({ 
+    m1 = run_meta(.nyd.global)
+    summ1 = rmeta::meta.summaries(m1$drifts, m1$se.drifts)
+    names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
+    nyind = which(names(m1$drifts) %in% c("New York", "New Jersey"))
+    summ2 = rmeta::meta.summaries(m1$drifts[-nyind], m1$se.drifts[-nyind])
+    list(overall=summ1, exclNYNJ=summ2)
+   })
+  output$metaplot = renderPlot({
+    m1 = run_meta(.nyd.global)
+    names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
+    o = order(m1$drifts)
+    rmeta::metaplot(m1$drifts[o], m1$se.drifts[o], labels=names(m1$drifts)[o], cex=.7, 
+      xlab="Infection velocity (CHANGE in number of confirmed cases/day)", ylab="State")
+    segments(rep(-350,46), seq(-49,-4), rep(-50,46), seq(-49,-4), lty=3, col="gray")
+   })
   observeEvent(input$stopper, {
        ans = dofit()
        stopApp(returnValue=ans$fit)

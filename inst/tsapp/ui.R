@@ -49,6 +49,10 @@ See 'About' tab for additional details."),
      tabPanel("rept",
       verbatimTextOutput("rept")
       ),
+     tabPanel("meta",
+      verbatimTextOutput("meta.rept"),
+      plotOutput("metaplot", height=700)
+      ),
      tabPanel("about",
       helpText("This app was produced to help evaluate a claim that
 an apparent decline in COVID-19 incidence for USA as a whole is driven by
