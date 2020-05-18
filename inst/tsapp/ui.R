@@ -37,7 +37,6 @@ Code derived from the ", a(href="https://seandavi.github.io/sars2pack", "sars2pa
 See 'About' tab for additional details."),
     selectInput("source", "source", choices=c("fullusa", allst), selected="fullusa"),
     radioButtons("excl", "exclude from fullusa", choices=c("no", "New York", "Washington"), selected="no"),
-    selectInput("trigcomp", "# trig components", choices=c("3", "4", "5", "6"), selected="5"),
     numericInput("MAorder", "MA order", min=1, max=4, value=2), # choices=c("1", "2"), selected="2"),
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
