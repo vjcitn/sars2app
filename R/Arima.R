@@ -165,13 +165,13 @@ plot.Arima_sars2pack = function(x, y, ...) {
  slo = coef(x$fit)["drift"]
  y1 = x$pred[29]
  y0 = y1 + slo*(-as.numeric(x$origin)-28) # x$time.from.origin[29] = 28
- abline(y0, slo, lty=2)
+ abline(y0, slo, lty=2, lwd=2)
  se = sqrt(x$fit$var.coef["drift", "drift"])
  y1b = slo*(14+as.numeric(x$origin))+y0
  y0p = y1b + (slo+1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
  y0m = y1b + (slo-1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
- abline(y0p, slo+1.96*se, lty=3)
- abline(y0m, slo-1.96*se, lty=3)
+ abline(y0p, slo+1.96*se, lty=3, col="gray")
+ abline(y0m, slo-1.96*se, lty=3, col="gray")
 }
 
 #' fit ARIMA model to US data dropping one state
