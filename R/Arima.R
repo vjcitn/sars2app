@@ -131,20 +131,15 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    dates29 = tail(ibyd$date,lookback_days)
    nlb=lookback_days-1
    time = (0:nlb)/nlb
-#
-# interactive selection of  MA order 
-#
-   MAord2use = MAorder
-#
 
    origin = max(ibyd$date)-lookback_days+1
    time.from.origin = as.numeric(dates29-origin)
    tsfull = ts(full29, freq=1)
-   Arima.full = Arima(tsfull, order=c(ARorder,Difforder,MAord2use), include.drift=TRUE)
+   Arima.full = Arima(tsfull, order=c(ARorder,Difforder,MAorder), include.drift=TRUE)
    pr = fitted.values(forecast(Arima.full))
    ans = list(fit=Arima.full, pred=pr, tsfull=tsfull, dates29=dates29, time.from.origin=time.from.origin,
         call=match.call(),
-        state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder)
+        state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder, ARorder=ARorder)
    class(ans) = "Arima_sars2pack"
    ans
 }
@@ -217,7 +212,7 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
             date >= basedate & subset=="confirmed" & state==state.in)
    ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in)
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(st$tsfull)
-   .Arima_inc(ibyd_shim, state.in=state.in, MAorder=MAorder,
+   .Arima_inc(ibyd_shim, state.in=paste("excl", state.in), MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
    }
 
