@@ -143,7 +143,14 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    origin = max(ibyd$date)-lookback_days+1
    time.from.origin = as.numeric(dates29-origin)
    tsfull = ts(full29, freq=1)
-   Arima.full = Arima(tsfull, order=c(ARorder,Difforder,MAorder), include.drift=TRUE)
+   Arima.full = try(Arima(tsfull, order=c(ARorder,Difforder,MAorder), include.drift=TRUE))
+   if (inherits(Arima.full, "try-error")) {
+     print(c(ARorder,Difforder,MAorder))
+     print(Arima.full)
+     ans = "likely_AR_error"
+     class(ans) = c("AR_error", "Arima_sars2pack")
+     return(ans)
+     }
    pr = fitted.values(forecast(Arima.full))
    ans = list(fit=Arima.full, pred=pr, tsfull=tsfull, dates29=dates29, time.from.origin=time.from.origin,
         call=match.call(),

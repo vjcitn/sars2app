@@ -26,8 +26,12 @@ library(forecast)
     ans = dofit()
     ans$fit
    })
+  dometa = reactive({
+    run_meta(.nyd.global, Difforder=input$Difforder, MAorder=input$MAorder,
+            ARorder=input$ARorder, max_date=input$maxdate)
+  })
   output$meta.rept = renderPrint({ 
-    m1 = run_meta(.nyd.global)
+    m1 = dometa()
     summ1 = rmeta::meta.summaries(m1$drifts, m1$se.drifts)
     names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
     nyind = which(names(m1$drifts) %in% c("New York", "New Jersey"))
@@ -35,7 +39,7 @@ library(forecast)
     list(overall=summ1, exclNYNJ=summ2)
    })
   output$metaplot = renderPlot({
-    m1 = run_meta(.nyd.global)
+    m1 = dometa()
     names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
     o = order(m1$drifts)
     rmeta::metaplot(m1$drifts[o], m1$se.drifts[o], labels=names(m1$drifts)[o], cex=.7, 
