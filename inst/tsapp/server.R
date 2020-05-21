@@ -4,7 +4,7 @@ library(dplyr)
 library(forecast)
 
 
- basedate = "2020-03-15" # data prior to this date are dropped completely
+ basedate = "2020-02-15" # data prior to this date are dropped completely
  lookback_days = 29 # from present date
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
@@ -12,10 +12,10 @@ library(forecast)
 
  server = function(input, output) {
   dofit = reactive({
-   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder)
+   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    else if (input$source == "fullusa" & input$excl != "no") 
-        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder)
-   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder)
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
+   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
   output$traj = renderPlot({

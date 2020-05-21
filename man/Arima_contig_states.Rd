@@ -9,7 +9,7 @@ Arima_contig_states(
   state.in = "All contig",
   MAorder = 2,
   Difforder = 1,
-  basedate = "2020-03-15",
+  basedate = "2020-02-15",
   lookback_days = 29,
   ARorder = 0,
   contig_vec = contig_states_twolet(),

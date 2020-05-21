@@ -98,7 +98,7 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' plot(lkny2)
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
@@ -124,7 +124,7 @@ Arima_by_state = function(src, state.in="New York", MAorder=2,
 #' plot(lkus)
 #' @export
 Arima_nation = function(ejhu, alp3="USA", MAorder=2,
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
@@ -133,7 +133,7 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    }
 
 .Arima_inc = function(ibyd, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    iuse = trim_from(ibyd, basedate)
    full29 = tail(ibyd$count,lookback_days)
    dates29 = tail(ibyd$date,lookback_days)
@@ -214,7 +214,7 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' par(opar)
 #' @export
 Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
          lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
@@ -239,7 +239,7 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 #' plot(cont)
 #' @export
 Arima_contig_states = function(src, state.in="All contig", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0,
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0,
    contig_vec = contig_states_twolet(), max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & 
        subset=="confirmed" & state %in% contig_vec)

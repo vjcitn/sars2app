@@ -10,7 +10,7 @@ Arima_drop_state(
   state.in = "New York",
   MAorder = 2,
   Difforder = 1,
-  basedate = "2020-03-15",
+  basedate = "2020-02-15",
   lookback_days = 29,
   ARorder = 0,
   max_date = NULL

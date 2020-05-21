@@ -23,7 +23,7 @@ library(forecast)
 #}
 #
 # ui code starts here
- basedate = "2020-03-15" # data prior to this date are dropped completely
+ basedate = "2020-02-15" # data prior to this date are dropped completely
  lookback_days = 29 # from present date
  if (!exists(".nyd.global")).nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
@@ -37,8 +37,10 @@ Code derived from the ", a(href="https://seandavi.github.io/sars2pack", "sars2pa
 See 'About' tab for additional details."),
     selectInput("source", "source", choices=c("fullusa", allst), selected="fullusa"),
     radioButtons("excl", "exclude from fullusa", choices=c("no", "New York", "Washington"), selected="no"),
+    dateInput("maxdate", "look back from", min="2020-03-15", max=max(lubridate::as_date(.nyd.global$date)),
+         value=max(lubridate::as_date(.nyd.global$date))),
     numericInput("MAorder", "MA order", min=1, max=6, value=3), 
-    numericInput("ARorder", "AR order", min=0, max=6, value=3), 
+    numericInput("ARorder", "AR order", min=0, max=6, value=0), 
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
     width=3),
