@@ -19,4 +19,10 @@ test_that("latest default date close to current date", {
  expect_true((as_date(Sys.Date()) - max(n1$dates29)) < 3)
 })
 
+context("date control for lookback works")
 
+n2 = Arima_by_state(nyd, max_date="2020-05-15")
+
+test_that("max_date setting works", {
+ expect_true((as_date("2020-05-15") == as_date(max(n2$dates29))))
+})

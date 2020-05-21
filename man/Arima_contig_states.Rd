@@ -12,7 +12,8 @@ Arima_contig_states(
   basedate = "2020-03-15",
   lookback_days = 29,
   ARorder = 0,
-  contig_vec = contig_states_twolet()
+  contig_vec = contig_states_twolet(),
+  max_date = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ Arima_contig_states(
 \item{ARorder}{order of autoregressive component}
 
 \item{contig_vec}{character() vector of tokens for subsetting src}
+
+\item{max_date}{a date from which to start lookback ... defaults to NULL in which
+case the latest available date is used}
 }
 \description{
 full incidence for contiguous states

@@ -12,7 +12,8 @@ Arima_drop_state(
   Difforder = 1,
   basedate = "2020-03-15",
   lookback_days = 29,
-  ARorder = 0
+  ARorder = 0,
+  max_date = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ Arima_drop_state(
 \item{lookback_days}{numeric(1) only uses this many days from most recent in src}
 
 \item{ARorder}{order of autoregressive component}
+
+\item{max_date}{a date from which to start lookback ... defaults to NULL in which
+case the latest available date is used}
 }
 \value{
 instance of S3 class Arima_sars2pack

@@ -60,6 +60,7 @@ form_inc_state = function(src, regtag, max_date=NULL) {
  fullsumm = src %>% 
   dplyr::select(state,date,count) %>% group_by(date) %>% 
    summarise(count=sum(count))  # counts by date collapsed over states
+ if (!is.null(max_date)) fullsumm = filter(fullsumm, date <= lubridate::as_date(max_date))
  thecum = make_cumul_events(count=fullsumm$count, dates=fullsumm$date, regtag=regtag)
  form_incident_events(thecum)
 }
@@ -68,6 +69,7 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
  fullsumm = src %>% 
   dplyr::select(date,count) %>% group_by(date) %>% 
    summarise(count=sum(count))  # counts by date 
+ if (!is.null(max_date)) fullsumm = filter(fullsumm, date <= lubridate::as_date(max_date))
  thecum = make_cumul_events(count=fullsumm$count, dates=fullsumm$date, regtag=regtag)
  form_incident_events(thecum)
 }
