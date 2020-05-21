@@ -3,7 +3,7 @@ library(testthat)
 library(lubridate)
 
 Arima_state_result_names = c("fit", "pred", "tsfull", "dates29", "time.from.origin", "call", 
-"state", "origin", "MAorder", "Difforder", "ARorder")
+"state", "origin", "MAorder", "Difforder", "ARorder", "max_date")
 
 context("basic Arima runs")
 

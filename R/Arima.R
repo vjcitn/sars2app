@@ -56,7 +56,7 @@ make_cumul_events = function(count, dates,
     ans 
 }
 
-form_inc_state = function(src, regtag) {
+form_inc_state = function(src, regtag, max_date=NULL) {
  fullsumm = src %>% 
   dplyr::select(state,date,count) %>% group_by(date) %>% 
    summarise(count=sum(count))  # counts by date collapsed over states
@@ -64,7 +64,7 @@ form_inc_state = function(src, regtag) {
  form_incident_events(thecum)
 }
 
-form_inc_nation = function(src, regtag) {
+form_inc_nation = function(src, regtag, max_date=NULL) {
  fullsumm = src %>% 
   dplyr::select(date,count) %>% group_by(date) %>% 
    summarise(count=sum(count))  # counts by date 
@@ -82,6 +82,8 @@ form_inc_nation = function(src, regtag) {
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in src
 #' @param ARorder order of autoregressive component
+#' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' nyd = nytimes_state_data()
@@ -94,11 +96,12 @@ form_inc_nation = function(src, regtag) {
 #' plot(lkny2)
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
-   ibyd = form_inc_state(cbyd, regtag=state.in)
+   ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+      max_date=max_date)
    }
 
 #' Use Rob Hyndman's forecast package to estimate drift in ARIMA models
@@ -109,6 +112,8 @@ Arima_by_state = function(src, state.in="New York", MAorder=2,
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in ejhu
 #' @param ARorder order of autoregressive component
+#' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' ej = enriched_jhu_data()
@@ -117,15 +122,16 @@ Arima_by_state = function(src, state.in="New York", MAorder=2,
 #' plot(lkus)
 #' @export
 Arima_nation = function(ejhu, alp3="USA", MAorder=2,
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
-   ibyd = form_inc_nation(cbyd, regtag=alp3)
+   ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+        max_date=max_date)
    }
 
 .Arima_inc = function(ibyd, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
    iuse = trim_from(ibyd, basedate)
    full29 = tail(ibyd$count,lookback_days)
    dates29 = tail(ibyd$date,lookback_days)
@@ -139,7 +145,8 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    pr = fitted.values(forecast(Arima.full))
    ans = list(fit=Arima.full, pred=pr, tsfull=tsfull, dates29=dates29, time.from.origin=time.from.origin,
         call=match.call(),
-        state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder, ARorder=ARorder)
+        state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder, ARorder=ARorder,
+            max_date=max_date)
    class(ans) = "Arima_sars2pack"
    ans
 }
@@ -182,6 +189,8 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
 #' @param lookback_days numeric(1) only uses this many days from most recent in src
 #' @param ARorder order of autoregressive component
+#' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @note Apparent discrepancies in counts in vicinity of April 15 between
 #' NYT and JHU for full US incidence lead us to employ the two sources
@@ -203,17 +212,18 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' par(opar)
 #' @export
 Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0) {
+   Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0, max_date=NULL) {
    nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
-         lookback_days=lookback_days, ARorder=ARorder)
+         lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
-         lookback_days=lookback_days, ARorder=ARorder)
+         lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    cbyd_shim = dplyr::filter(src_st,  # shim
             date >= basedate & subset=="confirmed" & state==state.in)
-   ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in)
+   ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in, max_date=max_date)
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(st$tsfull)
    .Arima_inc(ibyd_shim, state.in=paste("excl", state.in), MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+           max_date=max_date)
    }
 
 #' full incidence for contiguous states
@@ -228,10 +238,10 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 #' @export
 Arima_contig_states = function(src, state.in="All contig", MAorder=2, 
    Difforder=1, basedate="2020-03-15", lookback_days=29, ARorder=0,
-   contig_vec = contig_states_twolet()) {
+   contig_vec = contig_states_twolet(), max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & 
        subset=="confirmed" & state %in% contig_vec)
-   ibyd = form_inc_state(cbyd, regtag=state.in)
+   ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    .Arima_inc(ibyd, state.in="all", MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder)
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    }
