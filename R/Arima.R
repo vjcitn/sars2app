@@ -1,3 +1,13 @@
+
+parms = expand.grid(arorder=0:5, maorder=0:5)
+
+fits_on_grid = function(src, state.in="New York", parms) {
+ parms = split(parms, 1:nrow(parms))
+ lapply(parms, function(x) Arima_by_state(src, state.in=state.in,
+     MAorder=x[[1]], ARorder=x[[2]]))
+}
+
+
 #' provide vector of contiguous US state names and DC
 #' @importFrom graphics abline
 #' @importFrom stats coef fitted.values
@@ -148,7 +158,7 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
      print(c(ARorder,Difforder,MAorder))
      print(Arima.full)
      ans = "likely_AR_error"
-     class(ans) = c("AR_error", "Arima_sars2pack")
+     class(ans) = c("AR_error", "try-error")
      return(ans)
      }
    pr = fitted.values(forecast(Arima.full))
