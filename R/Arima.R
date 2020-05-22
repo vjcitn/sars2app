@@ -1,12 +1,67 @@
 
-parms = expand.grid(arorder=0:5, maorder=0:5)
+#' a two-dimensional grid of integers
+#' @param n maximum value, will expand.grid(0:n,0:n) with colnames arorder, maorder
+#' @export
+grid_2d = function(n=5) expand.grid(arorder=seq(0,n), maorder=seq(0,n))
 
-fits_on_grid = function(src, state.in="New York", parms) {
- parms = split(parms, 1:nrow(parms))
- lapply(parms, function(x) Arima_by_state(src, state.in=state.in,
-     MAorder=x[[1]], ARorder=x[[2]]))
+#' minimize BIC for ARIMA models with default differencing order 1 over choices of MA and AR order
+#' @param src tibble with cumulative incidence like output of nytimes_state_data()
+#' @param state.in character(1) state name
+#' @param parms two-column data frame with proposed AR order in column 1 and MA order in column 2
+#' @param max_date character(1) or lubridate date from which to look back
+#' @param lookback_days numeric(1)
+#' @param \dots passed to `Arima_by_state`
+#' @export
+min_bic = function(src, state.in="New York", parms=grid_2d(5), max_date=NULL, 
+   lookback_days=29, ...) {
+ nr = nrow(parms)
+ bics = sapply(seq_len(nr), function(r) try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
+          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...)$fit$bic))
+ errs = sapply(bics, inherits, "try-error")
+ dr = which(errs)
+ if (length(dr)>0) bics=bics[-dr]
+ ind = which.min(bics)
+ md = max_date
+ if (is.null(md)) md = max(src$date)
+ ans = list(opt=c(ARord=parms$arorder[ind], MAord=parms$maorder[ind]), bics=bics,
+                 state=state.in, date_run=Sys.Date(), max_date=md, lookback_days=lookback_days)
+ class(ans) = "bic_seq"
+ ans
 }
 
+#' report for optimal AR/MA search using BIC
+#' @param x instance of bic_seq S3 class
+#' @param \dots not used
+#' @export
+print.bic_seq = function(x, ...) {
+ cat("bic_seq for", x$state, "\n")
+ cat(" ", x$lookback_days, "day lookback from", paste(lubridate::as_date(x$max_date)), "\n")
+ cat(" best BIC =", min(x$bics), "for AR order", x$opt["ARord"], "MA order", x$opt["MAord"], "\n")
+}
+
+#' organize search over states for optimal statewise AR/MA using BIC 
+#' @param x instance of bic_seq S3 class
+#' @param \dots passed to `min_bic`
+#' @return instance of S3 class `min_bic_all_states`
+#' @export
+min_bic_all_states = function(src, ...) {
+ ans = lapply(contig_states_dc(), function(x) min_bic(src, state.in=x, ...))
+ names(ans) = contig_states_dc()
+ class(ans) = "min_bic_all_states"
+ ans
+}
+
+#' @export
+print.min_bic_all_states = function(x, ...) {
+ cat("min BICs for", x[[1]]$lookback_days, "day lookback from", 
+    paste(lubridate::as_date(x[[1]]$max_date), "\n"))
+ ars = sapply(x, function(x) x$opt["ARord"])
+ mas = sapply(x, function(x) x$opt["MAord"])
+ cat(" distribution of optimal autoregressive order:\n")
+ print(table(ars))
+ cat(" distribution of optimal moving average order:\n")
+ print(table(mas))
+}
 
 #' provide vector of contiguous US state names and DC
 #' @importFrom graphics abline
