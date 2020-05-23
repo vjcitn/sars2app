@@ -68,6 +68,16 @@ in sars2pack."),
 with a trace of the time series model as selected using the input controls."),
       helpText("Tab 'rept' reports statistics from the `forecast::Arima` function for
 the selected model."),
+      helpText("Tab 'meta' reports meta-analysis results using the rmeta package.
+The time series model for each state employs autoregressive and moving average
+orders selected by minimizing BIC over a grid of choices ranging from 0 to 5
+for each parameter.  Note that this minimization was conducted for data available
+20 May 2020.  Users can update these selections in their own
+interactive R sessions using 'min_bic_all_states' and supplying the result to `run_meta`."),
+      helpText(paste("This is version", packageVersion("sars2app"), "of sars2app,
+a 'thinned' subset of sars2pack.  See github.com/vjcitn/sars2app for sources on
+the app per se, and github.com/seandavi/sars2pack for sources on data acquisition
+and advanced visualization."))
       )
      )
     )

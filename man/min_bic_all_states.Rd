@@ -2,7 +2,7 @@
 % Please edit documentation in R/Arima.R
 \name{min_bic_all_states}
 \alias{min_bic_all_states}
-\title{organize search over states for optimal statewise AR/MA using BIC}
+\title{organize search over contiguous states for optimal statewise AR/MA using BIC}
 \usage{
 min_bic_all_states(src, ...)
 }
@@ -15,5 +15,5 @@ min_bic_all_states(src, ...)
 instance of S3 class \code{min_bic_all_states}
 }
 \description{
-organize search over states for optimal statewise AR/MA using BIC
+organize search over contiguous states for optimal statewise AR/MA using BIC
 }

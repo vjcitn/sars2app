@@ -4,10 +4,12 @@
 \alias{run_meta}
 \title{obtain input to rmeta meta.summaries, metaplot}
 \usage{
-run_meta(nyd, ...)
+run_meta(nyd, opt_parms, ...)
 }
 \arguments{
 \item{nyd}{tibble, data source assumed to be nytimes_state_data()}
+
+\item{opt_parms}{list, such as that produced by \code{min_bic_all_states()}}
 
 \item{\dots}{passed to \code{Arima_by_state}}
 }
@@ -16,7 +18,8 @@ obtain input to rmeta meta.summaries, metaplot
 }
 \examples{
 nyd = nytimes_state_data()
-m1 = run_meta(nyd)
+data(min_bic_2020_05_20)
+m1 = run_meta(nyd, opt_parms=min_bic_2020_05_20)
 rmeta::meta.summaries(m1$drifts, m1$se.drifts)
 names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
 nyind = which(names(m1$drifts) \%in\% c("New York", "New Jersey"))
