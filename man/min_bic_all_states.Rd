@@ -7,9 +7,9 @@
 min_bic_all_states(src, ...)
 }
 \arguments{
-\item{\dots}{passed to \code{min_bic}}
+\item{src}{tibble with cumulative incidence like output of nytimes_state_data()}
 
-\item{x}{instance of bic_seq S3 class}
+\item{\dots}{passed to \code{min_bic}}
 }
 \value{
 instance of S3 class \code{min_bic_all_states}

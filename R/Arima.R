@@ -40,7 +40,7 @@ print.bic_seq = function(x, ...) {
 }
 
 #' organize search over contiguous states for optimal statewise AR/MA using BIC 
-#' @param x instance of bic_seq S3 class
+#' @param src tibble with cumulative incidence like output of nytimes_state_data()
 #' @param \dots passed to `min_bic`
 #' @return instance of S3 class `min_bic_all_states`
 #' @export
