@@ -6,6 +6,7 @@
 \usage{
 min_bic(
   src,
+  fullusa = FALSE,
   state.in = "New York",
   parms = grid_2d(5),
   max_date = NULL,
@@ -15,6 +16,8 @@ min_bic(
 }
 \arguments{
 \item{src}{tibble with cumulative incidence like output of nytimes_state_data()}
+
+\item{fullusa}{logical(1) if TRUE, use Arima_nation (src should be enriched_jhu_data())}
 
 \item{state.in}{character(1) state name}
 

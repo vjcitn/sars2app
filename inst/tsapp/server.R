@@ -30,6 +30,11 @@ library(forecast)
    validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
     ans$fit
    })
+  output$tsdiag = renderPlot({ 
+    ans = dofit()
+   validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
+    tsdiag(ans$fit$fit)
+   })
   dometa = reactive({
     run_meta(.nyd.global, opt_parms=min_bic_2020_05_20, Difforder=input$Difforder, 
             max_date=input$maxdate)  # note that AR/MA parms from opt_parms

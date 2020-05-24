@@ -6,24 +6,30 @@ grid_2d = function(n=5) expand.grid(arorder=seq(0,n), maorder=seq(0,n))
 
 #' minimize BIC for ARIMA models with default differencing order 1 over choices of MA and AR order
 #' @param src tibble with cumulative incidence like output of nytimes_state_data()
+#' @param fullusa logical(1) if TRUE, use Arima_nation (src should be enriched_jhu_data())
 #' @param state.in character(1) state name
 #' @param parms two-column data frame with proposed AR order in column 1 and MA order in column 2
 #' @param max_date character(1) or lubridate date from which to look back
 #' @param lookback_days numeric(1)
 #' @param \dots passed to `Arima_by_state`
 #' @export
-min_bic = function(src, state.in="New York", parms=grid_2d(5), max_date=NULL, 
+min_bic = function(src, fullusa=FALSE, state.in="New York", parms=grid_2d(5), max_date=NULL, 
    lookback_days=29, ...) {
  nr = nrow(parms)
- bics = sapply(seq_len(nr), function(r) try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
+ if (!fullusa) bics = sapply(seq_len(nr), function(r) try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
           MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...)$fit$bic))
+ else {
+       state.in = NULL
+       bics = sapply(seq_len(nr), function(r) try(Arima_nation(src, ARorder=parms$arorder[r],
+          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...)$fit$bic))
+      }
  errs = sapply(bics, inherits, "try-error")
  dr = which(errs)
  if (length(dr)>0) bics=bics[-dr]
  ind = which.min(bics)
  md = max_date
  if (is.null(md)) md = max(src$date)
- ans = list(opt=c(ARord=parms$arorder[ind], MAord=parms$maorder[ind]), bics=bics,
+ ans = list(opt=c(ARord=parms$arorder[ind], MAord=parms$maorder[ind]), bics=bics, fullusa=fullusa,
                  state=state.in, date_run=Sys.Date(), max_date=md, lookback_days=lookback_days)
  class(ans) = "bic_seq"
  ans
@@ -242,8 +248,8 @@ plot.Arima_sars2pack = function(x, y, ...) {
  lines(x$origin+x$time.from.origin, x$pred)
  if (x$Difforder==1) {
   slo = coef(x$fit)["drift"]
-  y1 = x$pred[29]
-  y0 = y1 + slo*(-as.numeric(x$origin)-28) # x$time.from.origin[29] = 28
+  y1 = median(y_) #x$pred[29]
+  y0 = y1 + slo*(-as.numeric(x$origin)-13) # x$time.from.origin[29] = 28
   abline(y0, slo, lty=2, lwd=2)
   se = sqrt(x$fit$var.coef["drift", "drift"])
   y1b = slo*(14+as.numeric(x$origin))+y0

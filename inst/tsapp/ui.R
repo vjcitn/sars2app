@@ -40,7 +40,7 @@ See 'About' tab for additional details."),
     dateInput("maxdate", "look back from", min="2020-03-15", max=max(lubridate::as_date(.nyd.global$date)),
          value=max(lubridate::as_date(.nyd.global$date))),
     numericInput("MAorder", "MA order", min=0, max=6, value=3), 
-    numericInput("ARorder", "AR order", min=0, max=6, value=0), 
+    numericInput("ARorder", "AR order", min=0, max=6, value=3), # May 22 opt for USA
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
     width=3),
@@ -50,7 +50,8 @@ See 'About' tab for additional details."),
       plotOutput("traj")
       ),
      tabPanel("rept",
-      verbatimTextOutput("rept")
+      verbatimTextOutput("rept"),
+      plotOutput("tsdiag")
       ),
      tabPanel("meta",
       verbatimTextOutput("meta.rept"),
@@ -67,7 +68,7 @@ in sars2pack."),
       helpText("Tab 'traj' is a plot of the last 29 days of incidence reports
 with a trace of the time series model as selected using the input controls."),
       helpText("Tab 'rept' reports statistics from the `forecast::Arima` function for
-the selected model."),
+the selected model, and display the result of tsdiag()."),
       helpText("Tab 'meta' reports meta-analysis results using the rmeta package.
 The time series model for each state employs autoregressive and moving average
 orders selected by minimizing BIC over a grid of choices ranging from 0 to 5
