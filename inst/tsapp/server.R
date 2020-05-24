@@ -20,13 +20,22 @@ library(forecast)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
+# following can prevent needless refitting of R[t] model, which does not depend on ARIMA tuning
+  dofit_simple = reactive({
+   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl != "no") 
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate)
+   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
+   validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
+   list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
+   })
   output$traj = renderPlot({
    ans = dofit()
    validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
    plot(ans$fit, main="Incidence and time series model for selected source/parameters")
    })
   output$Rtplot = renderPlot({
-   ans = dofit()
+   ans = dofit_simple()
    ee = est_Rt(ans$fit)
    plot(ee, main="EpiEstim R[t] using MCMC-based Gamma model for SI")
    })
