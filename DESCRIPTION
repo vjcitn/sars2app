@@ -28,7 +28,7 @@ Suggests:
 Depends: R (>= 3.5.0)
 Imports: methods, utils, lubridate, magrittr, dplyr, tidyr, countrycode,
     openxlsx, tibble, jsonlite, httr, readr, BiocFileCache, forecast,
-    graphics, stats, rmeta
+    graphics, stats, rmeta, EpiEstim
 Url: https://github.com/vjcitn/sars2app
 BugReports: https://github.com/seandavi/sars2pack/issues/new
 License: MIT + file LICENSE
