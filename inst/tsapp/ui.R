@@ -47,8 +47,9 @@ See 'About' tab for additional details."),
    mainPanel(
     tabsetPanel(
      tabPanel("traj",
-      plotOutput("traj"),
-      plotOutput("Rtplot")
+      plotOutput("traj", height="425px"),
+      helpText("EpiEstim model for R[t] using MCMC-based Gamma model for serial interval:"),
+      plotOutput("Rtplot", height="425px")
       ),
      tabPanel("rept",
       verbatimTextOutput("rept"),

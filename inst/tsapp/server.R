@@ -23,12 +23,12 @@ library(forecast)
   output$traj = renderPlot({
    ans = dofit()
    validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
-   plot(ans$fit)
+   plot(ans$fit, main="Incidence and time series model for selected source/parameters")
    })
   output$Rtplot = renderPlot({
    ans = dofit()
    ee = est_Rt(ans$fit)
-   plot(ee)
+   plot(ee, main="EpiEstim R[t] using MCMC-based Gamma model for SI")
    })
   output$rept = renderPrint({ 
     ans = dofit()
