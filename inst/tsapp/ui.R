@@ -47,7 +47,8 @@ See 'About' tab for additional details."),
    mainPanel(
     tabsetPanel(
      tabPanel("traj",
-      plotOutput("traj")
+      plotOutput("traj"),
+      plotOutput("Rtplot")
       ),
      tabPanel("rept",
       verbatimTextOutput("rept"),
@@ -61,12 +62,15 @@ See 'About' tab for additional details."),
       helpText("This app was produced to help evaluate a claim that
 an apparent decline in COVID-19 incidence for USA as a whole is driven by
 the actual decline in incidence in New York.  See ",
-a(href="https://www.erinbromage.com/post/the-risks-know-them-avoid-them",
-"Erin Bromage's blog post"),"  As a by-product, models can
+ a(href="https://www.erinbromage.com/post/the-risks-know-them-avoid-them",
+"Erin Bromage's blog post."),"  As a by-product, models can
 be fit for any US state.  The data are generated using `nytimes_state_data()`
 in sars2pack."),
-      helpText("Tab 'traj' is a plot of the last 29 days of incidence reports
-with a trace of the time series model as selected using the input controls."),
+      helpText("Tab 'traj' include two displays.  At the top is a plot of the last 29 days of incidence reports
+with a trace of the fitted time series model as selected using the input controls.  Below that
+is a display of the fit of an `EpiEstim estimate_R` run with an MCMC-based
+model for the serial interval; see the ", a(href='https://github.com/seandavi/sars2pack',
+"doMCMC vignette of sars2pack.", target="_blank")),
       helpText("Tab 'rept' reports statistics from the `forecast::Arima` function for
 the selected model, and display the result of tsdiag()."),
       helpText("Tab 'meta' reports meta-analysis results using the rmeta package.

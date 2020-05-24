@@ -25,6 +25,11 @@ library(forecast)
    validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
    plot(ans$fit)
    })
+  output$Rtplot = renderPlot({
+   ans = dofit()
+   ee = est_Rt(ans$fit)
+   plot(ee)
+   })
   output$rept = renderPrint({ 
     ans = dofit()
    validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
