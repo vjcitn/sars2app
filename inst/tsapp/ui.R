@@ -3,6 +3,7 @@ library(shiny)
 library(sars2app)
 library(dplyr)
 library(forecast)
+library(shinytoastr)
 
 # private
 #make_cumul_events = function(count, dates, alpha3="USA", source="NYT", regtag=NA) {
@@ -29,6 +30,7 @@ library(forecast)
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
  ui = fluidPage(
+  shinytoastr::useToastr(),
   sidebarLayout(
    sidebarPanel(
     helpText("COVID-19 incidence trajectories with simple time series models.

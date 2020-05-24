@@ -2,6 +2,7 @@ library(shiny)
 library(sars2app)
 library(dplyr)
 library(forecast)
+library(shinytoastr)
 
 
  basedate = "2020-02-15" # data prior to this date are dropped completely
@@ -11,13 +12,16 @@ library(forecast)
  allst = sort(unique(.nyd.global$state))
  data(list="min_bic_2020_05_20", package="sars2app")
 
- server = function(input, output) {
+ server = function(input, output, session) {
   dofit = reactive({
+   toastr_info("computing ARIMA model")
    if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    else if (input$source == "fullusa" & input$excl != "no") 
         curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
+   validate(need(all(is.finite(coef(curfit$fit))), "non-finite coefficient produced; please alter AR or MA order"))
+   validate(need(all(diag(curfit$fit$var.coef)>0), "covariance matrix has diagonal element < 0; please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
 # following can prevent needless refitting of R[t] model, which does not depend on ARIMA tuning
@@ -36,6 +40,7 @@ library(forecast)
    })
   output$Rtplot = renderPlot({
    ans = dofit_simple()
+   toastr_info("estimating R[t]")
    ee = est_Rt(ans$fit)
    plot(ee, main="EpiEstim R[t] using MCMC-based Gamma model for SI")
    })
