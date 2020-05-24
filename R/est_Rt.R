@@ -1,5 +1,6 @@
 #' produce an MCMC-based EpiEstim R[t] estimate on the 29-day series
 #' @import EpiEstim
+#' @import shinytoastr
 #' @param aout instance of 'Arima_sars2pack' S3 class
 #' @note Simply uses the tsfull and dates29 components to call EpiEstim::estimate_R
 #' @examples
