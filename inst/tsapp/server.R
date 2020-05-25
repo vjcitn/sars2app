@@ -15,9 +15,19 @@ library(shinytoastr)
  server = function(input, output, session) {
   dofit = reactive({
    toastr_info("computing ARIMA model")
-   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl != "no") 
-        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
+   if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "New York") 
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
+                 max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey", "Massachusetts"), 
+                 max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
+                 states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
+                 max_date=input$maxdate)
    else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    validate(need(all(is.finite(coef(curfit$fit))), "non-finite coefficient produced; please alter AR or MA order"))
@@ -26,9 +36,19 @@ library(shinytoastr)
    })
 # following can prevent needless refitting of R[t] model, which does not depend on ARIMA tuning
   dofit_simple = reactive({
-   if (input$source == "fullusa" & input$excl == "no") curfit = Arima_nation(.jhu.global, max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl != "no") 
+   if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "New York") 
         curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
+                 max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey", "Massachusetts"), 
+                 max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
+                 states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
+                 max_date=input$maxdate)
    else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)

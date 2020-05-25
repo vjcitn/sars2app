@@ -315,6 +315,28 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
            max_date=max_date)
    }
 
+#' @export
+Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jersey"), MAorder=3, 
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL, ARorder.nat=3) {
+   nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
+         lookback_days=lookback_days, ARorder=ARorder.nat, max_date=max_date)
+   sts = lapply(states.in, function(x) Arima_by_state(src_st, state.in=x, 
+         MAorder=MAorder, Difforder=Difforder, basedate=basedate,
+         lookback_days=lookback_days, ARorder=ARorder, max_date=max_date))
+   names(sts) = states.in
+   cbyd_shims = lapply(states.in, function(x) dplyr::filter(src_st,  # shim
+            date >= basedate & subset=="confirmed" & state==x))
+   names(cbyd_shims) = states.in
+   ibyd_shims = lapply(states.in, function(x) form_inc_state(cbyd_shims[[x]], regtag=x, max_date=max_date))
+   ibyd_shim = ibyd_shims[[1]]
+   ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(sts[[1]]$tsfull)
+   for (i in 2:length(ibyd_shims)) 
+       ibyd_shim$count = as.numeric(ibyd_shim$count)-as.numeric(sts[[i]]$tsfull)
+   .Arima_inc(ibyd_shim, state.in=paste("excl", paste(states.in, collapse=", ")), MAorder=MAorder,
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+           max_date=max_date)
+   }
+
 #' full incidence for contiguous states
 #' @inheritParams Arima_drop_state
 #' @param src tibble for state level data like that of nytimes_state_data()
