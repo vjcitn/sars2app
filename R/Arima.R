@@ -12,6 +12,10 @@ grid_2d = function(n=5) expand.grid(arorder=seq(0,n), maorder=seq(0,n))
 #' @param max_date character(1) or lubridate date from which to look back
 #' @param lookback_days numeric(1)
 #' @param \dots passed to `Arima_by_state`
+#' @examples
+#' nyd = nytimes_state_data()
+#' mb = min_bic(nyd, state.in="New York")
+#' names(mb)
 #' @export
 min_bic = function(src, fullusa=FALSE, state.in="New York", parms=grid_2d(5), max_date=NULL, 
    lookback_days=29, ...) {
@@ -40,8 +44,8 @@ min_bic = function(src, fullusa=FALSE, state.in="New York", parms=grid_2d(5), ma
 #' @param \dots not used
 #' @export
 print.bic_seq = function(x, ...) {
- cat("bic_seq for", x$state, "\n")
- cat(" ", x$lookback_days, "day lookback from", paste(lubridate::as_date(x$max_date)), "\n")
+ cat(paste("bic_seq for", x$state, "; last date used =", lubridate::as_date(x$max_date), "\n"))
+ cat(" ", x$lookback_days, "day lookback.\n")
  cat(" best BIC =", min(x$bics), "for AR order", x$opt["ARord"], "MA order", x$opt["MAord"], "\n")
 }
 
@@ -160,11 +164,12 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' nyd = nytimes_state_data()
-#' lkny = Arima_by_state(nyd)
+#' mb = min_bic(nyd, state.in="New York")
+#' lkny = Arima_by_state(nyd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 #' lkny
 #' plot(lkny)
 #' usd = jhu_us_data()
-#' lkny2 = Arima_by_state(usd)
+#' lkny2 = Arima_by_state(usd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 #' lkny2
 #' plot(lkny2)
 #' @export
@@ -172,9 +177,10 @@ Arima_by_state = function(src, state.in="New York", MAorder=2,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
+   tc = match.call()
    .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
-      max_date=max_date)
+      max_date=max_date, topcall=tc)
    }
 
 #' Use Rob Hyndman's forecast package to estimate drift in ARIMA models
@@ -198,13 +204,15 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
+   tc = match.call()
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
-        max_date=max_date)
+        max_date=max_date, topcall=tc)
    }
 
 .Arima_inc = function(ibyd, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL, topcall=NULL) {
+   if (is.null(MAorder) | is.null(ARorder)) stop("MA/AR order inputs cannot be NULL")
    iuse = trim_from(ibyd, basedate)
    full29 = tail(ibyd$count,lookback_days)
    dates29 = tail(ibyd$date,lookback_days)
@@ -224,9 +232,9 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
      }
    pr = fitted.values(forecast(Arima.full))
    ans = list(fit=Arima.full, pred=pr, tsfull=tsfull, dates29=dates29, time.from.origin=time.from.origin,
-        call=match.call(),
+        call=topcall,
         state=state.in, origin=as_date(origin), MAorder=MAorder, Difforder=Difforder, ARorder=ARorder,
-            max_date=max_date)
+            max_date=max_date, Arima.inc.call=match.call())
    class(ans) = "Arima_sars2pack"
    ans
 }
@@ -234,6 +242,7 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
 #' @export
 print.Arima_sars2pack = function(x, ...) {
  cat("Arima_sars2pack instance for", x$state, "\n  computed", date(),  "\n")
+ cat(paste("  last date used was: ", lubridate::as_date(max(x$dates29)), "\n"))
  cat("  call was: ")
  print(x$call)
  cat("  Model estimates: \n")

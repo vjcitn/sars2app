@@ -5,9 +5,27 @@ library(lubridate)
 Arima_state_result_names = c("fit", "pred", "tsfull", "dates29", "time.from.origin", "call", 
 "state", "origin", "MAorder", "Difforder", "ARorder", "max_date")
 
-context("basic Arima runs")
+context("basic data and accumulation tests")
 
-nyd = nytimes_state_data()
+
+
+test_that("nytimes state data columns are as expected", {
+nyd <<- nytimes_state_data()
+expect_true(all(names(nyd)==c("date", "state", "fips", "count", "subset")))
+})
+
+test_that("cumulative events for state work", {
+ cc = cumulative_events_nyt_state(nyd)
+ expect_true(all(class(cc)==c("cumulative_events", "covid_events")))
+ expect_true(all(names(cc) == c("count", "dates")))
+})
+
+test_that("usa_facts data are as expected", {
+us = usa_facts_data()
+expect_true(all(c("fips", "county", "state", "subset", "date", "count") %in% names(us)))
+})
+
+context("basic Arima runs")
 
 n1 = Arima_by_state(nyd)
 
@@ -90,6 +108,19 @@ test_that("run_meta succeeds", {
              max_date=input$maxdate)  # note that AR/MA parms from opt_parms
    expect_true(all(c("drifts", "se.drifts") %in% names(mchk)))
   })
+
+test_that("min_bic gives expected result", {
+  def_515 = min_bic(nyd, max_date="2020-05-15")
+  expect_true(all(def_515$opt == c("ARord"=2, "MAord"=1)))
+  expect_true(all(names(def_515$opt) == names(c("ARord"=2, "MAord"=1))))
+})
+
+test_that("est_Rt succeeds", {
+  ny = Arima_by_state(nyd, state.in="New York", max_date="2020-05-15")
+  ee = est_Rt(ny)
+  expect_true(abs(ee$R[22,"Mean(R)"]-0.7269)<.001)
+})
+
 
 
 #   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)

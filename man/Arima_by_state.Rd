@@ -41,11 +41,12 @@ Use Rob Hyndman's forecast package to estimate drift in ARIMA models
 }
 \examples{
 nyd = nytimes_state_data()
-lkny = Arima_by_state(nyd)
+mb = min_bic(nyd, state.in="New York")
+lkny = Arima_by_state(nyd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 lkny
 plot(lkny)
 usd = jhu_us_data()
-lkny2 = Arima_by_state(usd)
+lkny2 = Arima_by_state(usd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 lkny2
 plot(lkny2)
 }
