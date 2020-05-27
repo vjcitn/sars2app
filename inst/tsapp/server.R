@@ -17,18 +17,23 @@ library(shinytoastr)
    toastr_info("computing ARIMA model")
    if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    else if (input$source == "fullusa" & input$excl == "New York") 
-        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ") 
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate,
+           MAorder=input$MAorder, ARorder=input$ARorder)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
-                 max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA") 
-        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey", "Massachusetts"), 
-                 max_date=input$maxdate)
+                   max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA")
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
+                   states.in=c("New York", "New Jersey", "Massachusetts"), 
+                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
    else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                 states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
-                 max_date=input$maxdate)
-   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
+                   states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
+                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+   else if (input$source != "fullusa") 
+        curfit = Arima_by_state(.nyd.global, state.in=input$source, 
+                   Difforder=input$Difforder, MAorder=input$MAorder, 
+                       ARorder=input$ARorder, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    validate(need(all(is.finite(coef(curfit$fit))), "non-finite coefficient produced; please alter AR or MA order"))
    validate(need(all(diag(curfit$fit$var.coef)>0), "covariance matrix has diagonal element < 0; please alter AR or MA order"))
