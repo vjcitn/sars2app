@@ -7,11 +7,11 @@
 Arima_by_state(
   src,
   state.in = "New York",
-  MAorder = 2,
+  MAorder = NULL,
   Difforder = 1,
   basedate = "2020-02-15",
   lookback_days = 29,
-  ARorder = 0,
+  ARorder = NULL,
   max_date = NULL
 )
 }
@@ -49,4 +49,6 @@ usd = jhu_us_data()
 lkny2 = Arima_by_state(usd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 lkny2
 plot(lkny2)
+lknyNULL = Arima_by_state(nyd, ARorder=NULL, MAorder=NULL)
+lknyNULL
 }

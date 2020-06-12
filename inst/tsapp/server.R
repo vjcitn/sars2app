@@ -10,7 +10,7 @@ library(shinytoastr)
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
- data(list="min_bic_2020_05_20", package="sars2app")
+ data(list="min_bic_2020_06_12", package="sars2app")
 
  server = function(input, output, session) {
   dofit = reactive({
@@ -80,7 +80,7 @@ library(shinytoastr)
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
-    run_meta(.nyd.global, opt_parms=min_bic_2020_05_20, Difforder=input$Difforder, 
+    run_meta(.nyd.global, opt_parms=min_bic_2020_06_12, Difforder=input$Difforder, 
             max_date=input$maxdate)  # note that AR/MA parms from opt_parms
   })
   output$meta.rept = renderPrint({ 

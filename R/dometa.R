@@ -1,12 +1,13 @@
 #' obtain input to rmeta meta.summaries, metaplot
 #' @import rmeta
+#' @import parallel
 #' @param nyd tibble, data source assumed to be nytimes_state_data()
 #' @param opt_parms list, such as that produced by `min_bic_all_states()`
 #' @param \dots passed to `Arima_by_state`
 #' @examples
 #' nyd = nytimes_state_data()
 #' data(min_bic_2020_05_20)
-#' m1 = run_meta(nyd, opt_parms=min_bic_2020_05_20)
+#' m1 = run_meta(nyd, opt_parms=min_bic_2020_06_12) # must be relatively current
 #' rmeta::meta.summaries(m1$drifts, m1$se.drifts)
 #' names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
 #' nyind = which(names(m1$drifts) %in% c("New York", "New Jersey"))
@@ -18,6 +19,8 @@
 #' @export
 run_meta = function(nyd, opt_parms, ...) {
  allst = contig_states_dc()
+ nc = parallel::detectCores()-1
+ options(mc.cores=nc)
  allarima = lapply(allst, function(x) {
    parms = opt_parms[[x]]
    Arima_by_state(nyd, x, ARorder=parms$opt["ARord"], MAorder=parms$opt["MAord"], ...)

@@ -20,16 +20,27 @@ grid_2d = function(n=5) expand.grid(arorder=seq(0,n), maorder=seq(0,n))
 min_bic = function(src, fullusa=FALSE, state.in="New York", parms=grid_2d(5), max_date=NULL, 
    lookback_days=29, ...) {
  nr = nrow(parms)
- if (!fullusa) bics = sapply(seq_len(nr), function(r) try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
-          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...)$fit$bic))
+ if (!fullusa) bics = sapply(seq_len(nr), function(r) {
+      ari = try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
+          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...), silent=TRUE)
+      if (!inherits(ari, "try-error")) return(ari$fit$bic)
+      ari
+      })
  else {
        state.in = NULL
-       bics = sapply(seq_len(nr), function(r) try(Arima_nation(src, ARorder=parms$arorder[r],
-          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...)$fit$bic))
-      }
- errs = sapply(bics, inherits, "try-error")
+       bics = sapply(seq_len(nr), function(r) {
+          ari = try(Arima_nation(src, ARorder=parms$arorder[r], MAorder=parms$maorder[r], 
+               max_date=max_date, lookback_days=lookback_days, ...), silent=TRUE)
+          if (!inherits(ari, "try-error")) return(ari$fit$bic)
+          ari
+      })
+     }
+ errs = sapply(bics, function(x) (inherits(x, "try-error") | is.na(x)))
  dr = which(errs)
- if (length(dr)>0) bics=bics[-dr]
+ if (length(dr)>0) {
+    bics=bics[-dr]
+    parms = parms[-dr,]
+    }
  ind = which.min(bics)
  md = max_date
  if (is.null(md)) md = max(src$date)
@@ -172,12 +183,20 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' lkny2 = Arima_by_state(usd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
 #' lkny2
 #' plot(lkny2)
+#' lknyNULL = Arima_by_state(nyd, ARorder=NULL, MAorder=NULL)
+#' lknyNULL
 #' @export
-Arima_by_state = function(src, state.in="New York", MAorder=2, 
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
+Arima_by_state = function(src, state.in="New York", MAorder=NULL,
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    tc = match.call()
+   if (is.null(MAorder) | is.null(ARorder)) {
+     mb = min_bic(src=src, state.in=state.in, basedate=basedate, lookback_days=lookback_days,
+        max_date=max_date)
+     MAorder = mb$opt["MAord"]
+     ARorder = mb$opt["ARord"]
+     }
    .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
       max_date=max_date, topcall=tc)
@@ -226,7 +245,8 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    if (inherits(Arima.full, "try-error")) {
      print(c(ARorder,Difforder,MAorder))
      print(Arima.full)
-     ans = "likely_AR_error"
+     ans = NA_real_
+     names(ans) = "likely_AR_error"
      class(ans) = c("AR_error", "try-error")
      return(ans)
      }
