@@ -13,6 +13,16 @@
 #' options(digits=od)
 #' @export
 est_Rt = function(aout) {
- source(system.file("MCMCsupport/code.R", package="sars2app"))
+ #source(system.file("MCMCsupport/code.R", package="sars2app"))
  run_ee(aout)
 }
+
+#' basic support, formerly completely hidden in inst, uses Gamma-based MCMC for SI
+run_ee = function(arima_out, ...) {
+ requireNamespace("EpiEstim")
+ data(si_cens_G, package="sars2app")
+ adf = data.frame(I=as.numeric(arima_out$tsfull), dates=arima_out$dates29)
+ EpiEstim::estimate_R(adf, method="si_from_sample", si_sample=si_cens_G$si_sample,
+     config=EpiEstim:::make_config(list(n2=50, seed=1)))
+}
+

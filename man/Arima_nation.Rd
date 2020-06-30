@@ -12,7 +12,8 @@ Arima_nation(
   basedate = "2020-02-15",
   lookback_days = 29,
   ARorder = 0,
-  max_date = NULL
+  max_date = NULL,
+  curbic = NULL
 )
 }
 \arguments{
@@ -30,7 +31,9 @@ Arima_nation(
 
 \item{ARorder}{order of autoregressive component}
 
-\item{max_date}{a date from which to start lookback ... defaults to NULL in which
+\item{max_date}{a date from which to start lookback ... defaults to NULL in which}
+
+\item{curbic}{an instance of S3 class bic_seq
 case the latest available date is used}
 }
 \value{
@@ -41,7 +44,8 @@ Use Rob Hyndman's forecast package to estimate drift in ARIMA models
 }
 \examples{
 ej = enriched_jhu_data()
-lkus = Arima_nation(ej)
+curbic = min_bic(ej, fullusa=TRUE)
+lkus = Arima_nation(ej, curbic=curbic)
 lkus
 plot(lkus)
 }

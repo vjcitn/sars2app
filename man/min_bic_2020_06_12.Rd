@@ -3,7 +3,7 @@
 \docType{data}
 \name{min_bic_2020_06_12}
 \alias{min_bic_2020_06_12}
-\title{a statewide collection of best AR/MA model orders}
+\title{a statewide collection of best AR/MA model orders, 6/12}
 \format{
 S3 instance
 }
@@ -11,6 +11,6 @@ S3 instance
 min_bic_2020_06_12
 }
 \description{
-a statewide collection of best AR/MA model orders
+a statewide collection of best AR/MA model orders, 6/12
 }
 \keyword{datasets}

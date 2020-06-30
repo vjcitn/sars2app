@@ -1,9 +1,19 @@
-#' a statewide collection of best AR/MA model orders
+#' a statewide collection of best AR/MA model orders, 5/20
 #' @docType data
 #' @format S3 instance
 "min_bic_2020_05_20"
 
-#' a statewide collection of best AR/MA model orders
+#' a statewide collection of best AR/MA model orders, 6/12
 #' @docType data
 #' @format S3 instance
 "min_bic_2020_06_12"
+
+#' a statewide collection of best AR/MA model orders, 6/30
+#' @docType data
+#' @format S3 instance
+"min_bic_2020_06_30"
+
+#' an EpiEstim-based, MCMC-derived SI sample, with Gamma basis
+#' @docType data
+#' @format list
+"si_cens_G"

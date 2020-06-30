@@ -211,18 +211,25 @@ Arima_by_state = function(src, state.in="New York", MAorder=NULL,
 #' @param lookback_days numeric(1) only uses this many days from most recent in ejhu
 #' @param ARorder order of autoregressive component
 #' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' @param curbic an instance of S3 class bic_seq
 #' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' ej = enriched_jhu_data()
-#' lkus = Arima_nation(ej)
+#' curbic = min_bic(ej, fullusa=TRUE)
+#' lkus = Arima_nation(ej, curbic=curbic)
 #' lkus
 #' plot(lkus)
 #' @export
 Arima_nation = function(ejhu, alp3="USA", MAorder=2,
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL,
+   curbic=NULL) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
+   if (!is.null(curbic)) {
+    ARorder = curbic$opt["ARord"]
+    MAorder = curbic$opt["MAord"]
+    }
    tc = match.call()
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
