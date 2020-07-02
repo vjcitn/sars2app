@@ -28,6 +28,7 @@ library(shinytoastr)
  lookback_days = 29 # from present date
  if (!exists(".nyd.global")).nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
+ usa_parms = min_bic(.jhu.global, fullusa=TRUE)
  allst = sort(unique(.nyd.global$state))
  ui = fluidPage(
   shinytoastr::useToastr(),
@@ -42,8 +43,8 @@ See 'About' tab for additional details."),
                   "NY,NJ,MA,PA"), selected="none"),
     dateInput("maxdate", "look back from", min="2020-03-15", max=max(lubridate::as_date(.nyd.global$date)),
          value=max(lubridate::as_date(.nyd.global$date))),
-    numericInput("MAorder", "MA order", min=0, max=6, value=3), 
-    numericInput("ARorder", "AR order", min=0, max=6, value=3), # May 22 opt for USA
+    numericInput("MAorder", "MA order", min=0, max=6, value=usa_parms$opt["MAord"]), 
+    numericInput("ARorder", "AR order", min=0, max=6, value=usa_parms$opt["ARord"]), # realtime intro 14 jun
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
     width=3),

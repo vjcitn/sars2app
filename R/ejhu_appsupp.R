@@ -1,14 +1,18 @@
 get_region = function(x) UseMethod("get_region")
+
 get_region.covid_events = function(x) {
   al3 = attr(x, "alpha3")
   provst = attr(x, "ProvinceState")
+  county = attr(x, "county")
   reg = NULL
-  if (!isTRUE(is.na(provst)) & !is.null(provst) & !is.null(al3)) reg = paste(provst, al3, sep=" ")
+  if (!isTRUE(is.na(provst)) & !is.null(provst) & !is.null(county)) reg = paste(county, provst, sep="/")
+  else if (!isTRUE(is.na(provst)) & !is.null(provst) & !is.null(al3)) reg = paste(provst, al3, sep=" ")
   else if (!isTRUE(is.na(provst)) & !is.null(provst)) reg = provst
   else if (!is.null(al3)) reg = al3
   if (is.null(reg)) region_name = "missing"
   reg
 }
+
 
 #' print for a covid_events instance
 #' @param x covid_events instance

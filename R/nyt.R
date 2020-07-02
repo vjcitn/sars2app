@@ -23,3 +23,34 @@ cumulative_events_nyt_state = function (src, eventtype = "confirmed",
     class(ans) = c("cumulative_events", "covid_events")
     ans
 }
+
+#' create cumulative_events instance for county in state data from NYT
+#' @param src a tibble
+#' @param eventtype character(1) 'confirmed' or 'deaths'
+#' @param statename character(1) state name
+#' @examples
+#' nytc = nytimes_county_data()
+#' norf = cumulative_events_nyt_county(nytc, eventtype = "confirmed",
+#'    statename = "Massachusetts", countyname="Norfolk")
+#' norf
+#' inorf = form_incident_events(trim_from(norf, "2020-03-01"))
+#' plot(inorf)
+#' @export
+cumulative_events_nyt_county = function (src, eventtype = "confirmed", statename = "Massachusetts",
+    countyname = "Norfolk")
+{
+    stopifnot(countyname %in% src$county)
+    stopifnot(statename %in% src$state)
+    cur = src %>% dplyr::filter(subset == eventtype & state ==
+        statename & county == countyname)
+    cumul = cur$count
+    dates = cur$date
+    ans = list(count = cumul, dates = dates)
+    attr(ans, "ProvinceState") = statename
+    attr(ans, "county") = countyname
+    attr(ans, "source") = "NYT"
+    attr(ans, "dtype") = "cumulative"
+    class(ans) = c("cumulative_events", "covid_events")
+    ans
+}
+
