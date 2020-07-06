@@ -82,7 +82,7 @@ the selected model, and display the result of tsdiag()."),
 The time series model for each state employs autoregressive and moving average
 orders selected by minimizing BIC over a grid of choices ranging from 0 to 5
 for each parameter.  Note that this minimization was conducted for data available
-20 May 2020.  Users can update these selections in their own
+06 July 2020.  Users can update these selections in their own
 interactive R sessions using 'min_bic_all_states' and supplying the result to `run_meta`."),
       helpText(paste("This is version", packageVersion("sars2app"), "of sars2app,
 a 'thinned' subset of sars2pack.  See github.com/vjcitn/sars2app for sources on
