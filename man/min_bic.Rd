@@ -8,6 +8,7 @@ min_bic(
   src,
   fullusa = FALSE,
   state.in = "New York",
+  county.in = NULL,
   parms = grid_2d(5),
   max_date = NULL,
   lookback_days = 29,
@@ -21,13 +22,15 @@ min_bic(
 
 \item{state.in}{character(1) state name}
 
+\item{county.in}{character(1) county name, defaults to NULL, but if supplied, focus on county-level data}
+
 \item{parms}{two-column data frame with proposed AR order in column 1 and MA order in column 2}
 
 \item{max_date}{character(1) or lubridate date from which to look back}
 
 \item{lookback_days}{numeric(1)}
 
-\item{\dots}{passed to \code{Arima_by_state}}
+\item{\dots}{passed to \code{Arima_by_state} or \code{Arima_by_county}}
 }
 \description{
 minimize BIC for ARIMA models with default differencing order 1 over choices of MA and AR order
@@ -36,4 +39,7 @@ minimize BIC for ARIMA models with default differencing order 1 over choices of 
 nyd = nytimes_state_data()
 mb = min_bic(nyd, state.in="New York")
 names(mb)
+nytc = nytimes_county_data()
+mb2 = min_bic(nytc, state.in="Massachusetts", county.in="Norfolk")
+names(mb2)
 }

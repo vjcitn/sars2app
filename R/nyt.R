@@ -28,6 +28,7 @@ cumulative_events_nyt_state = function (src, eventtype = "confirmed",
 #' @param src a tibble
 #' @param eventtype character(1) 'confirmed' or 'deaths'
 #' @param statename character(1) state name
+#' @param countyname character(1) county name
 #' @examples
 #' nytc = nytimes_county_data()
 #' norf = cumulative_events_nyt_county(nytc, eventtype = "confirmed",

@@ -18,6 +18,7 @@ est_Rt = function(aout) {
 }
 
 #' basic support, formerly completely hidden in inst, uses Gamma-based MCMC for SI
+#' @param arima_out instance of Arima_sars2pack
 run_ee = function(arima_out, ...) {
  requireNamespace("EpiEstim")
  data(si_cens_G, package="sars2app")

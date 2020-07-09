@@ -17,6 +17,8 @@ cumulative_events_nyt_county(
 \item{eventtype}{character(1) 'confirmed' or 'deaths'}
 
 \item{statename}{character(1) state name}
+
+\item{countyname}{character(1) county name}
 }
 \description{
 create cumulative_events instance for county in state data from NYT

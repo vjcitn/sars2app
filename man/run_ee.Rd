@@ -6,6 +6,9 @@
 \usage{
 run_ee(arima_out, ...)
 }
+\arguments{
+\item{arima_out}{instance of Arima_sars2pack}
+}
 \description{
 basic support, formerly completely hidden in inst, uses Gamma-based MCMC for SI
 }

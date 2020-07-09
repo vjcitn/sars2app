@@ -8,23 +8,34 @@ grid_2d = function(n=5) expand.grid(arorder=seq(0,n), maorder=seq(0,n))
 #' @param src tibble with cumulative incidence like output of nytimes_state_data()
 #' @param fullusa logical(1) if TRUE, use Arima_nation (src should be enriched_jhu_data())
 #' @param state.in character(1) state name
+#' @param county.in character(1) county name, defaults to NULL, but if supplied, focus on county-level data
 #' @param parms two-column data frame with proposed AR order in column 1 and MA order in column 2
 #' @param max_date character(1) or lubridate date from which to look back
 #' @param lookback_days numeric(1)
-#' @param \dots passed to `Arima_by_state`
+#' @param \dots passed to `Arima_by_state` or `Arima_by_county`
 #' @examples
 #' nyd = nytimes_state_data()
 #' mb = min_bic(nyd, state.in="New York")
 #' names(mb)
+#' nytc = nytimes_county_data()
+#' mb2 = min_bic(nytc, state.in="Massachusetts", county.in="Norfolk")
+#' names(mb2)
 #' @export
-min_bic = function(src, fullusa=FALSE, state.in="New York", parms=grid_2d(5), max_date=NULL, 
+min_bic = function(src, fullusa=FALSE, state.in="New York", county.in=NULL, parms=grid_2d(5), max_date=NULL, 
    lookback_days=29, ...) {
  nr = nrow(parms)
  if (!fullusa) bics = sapply(seq_len(nr), function(r) {
-      ari = try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
+    if (is.null(county.in)) {
+         ari = try(Arima_by_state(src, state.in=state.in, ARorder=parms$arorder[r],
           MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...), silent=TRUE)
-      if (!inherits(ari, "try-error")) return(ari$fit$bic)
-      ari
+         if (!inherits(ari, "try-error")) return(ari$fit$bic)
+         ari
+         } else {
+         ari = try(Arima_by_county(src, state.in=state.in, county.in=county.in, ARorder=parms$arorder[r],
+          MAorder=parms$maorder[r], max_date=max_date, lookback_days=lookback_days, ...), silent=TRUE)
+         if (!inherits(ari, "try-error")) return(ari$fit$bic)
+         ari
+         }
       })
  else {
        state.in = NULL
@@ -146,6 +157,14 @@ form_inc_state = function(src, regtag, max_date=NULL) {
  fullsumm = src %>% 
   dplyr::select(state,date,count) %>% group_by(date) %>% 
    summarise(count=sum(count))  # counts by date collapsed over states
+ if (!is.null(max_date)) fullsumm = filter(fullsumm, date <= lubridate::as_date(max_date))
+ thecum = make_cumul_events(count=fullsumm$count, dates=fullsumm$date, regtag=regtag)
+ form_incident_events(thecum)
+}
+
+form_inc_county = function(src, regtag, max_date=NULL) {
+ fullsumm = src %>% 
+  dplyr::select(state,date,county,count) 
  if (!is.null(max_date)) fullsumm = filter(fullsumm, date <= lubridate::as_date(max_date))
  thecum = make_cumul_events(count=fullsumm$count, dates=fullsumm$date, regtag=regtag)
  form_incident_events(thecum)
@@ -342,6 +361,17 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
            max_date=max_date)
    }
 
+#' multistate exclusion prior to ARIMA
+#' @param src_us tibble for national level data like that of enriched_jhu_data()
+#' @param src_st tibble for state level data like that of nytimes_state_data()
+#' @param states.in character() vector of state names
+#' @param MAorder numeric(1) order of moving average component
+#' @param Difforder numeric(1) differencing order d of ARIMA(p,d,q)
+#' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
+#' @param lookback_days numeric(1) only uses this many days from most recent in src
+#' @param ARorder order of autoregressive component
+#' @param max_date character(1) or date
+#' @param ARorder.nat order of autoregressive component for entire nation
 #' @export
 Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jersey"), MAorder=3, 
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL, ARorder.nat=3) {
@@ -382,4 +412,37 @@ Arima_contig_states = function(src, state.in="All contig", MAorder=2,
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    .Arima_inc(ibyd, state.in="all", MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
+   }
+
+#' county-level model
+#' @param src a tibble as returned by nytimes_state_data() or jhu_us_data()
+#' @param state.in character(1) state name
+#' @param county.in character(1) state name
+#' @param MAorder numeric(1) order of moving average component, defaults to NULL in which case min_bic is used to
+#' find best value on grid (0:5)^2
+#' @param Difforder numeric(1) order of differencing d in ARIMA(p,d,q)
+#' @param basedate character(1) used by lubridate::as_date to filter away all earlier records
+#' @param lookback_days numeric(1) only uses this many days from most recent in src
+#' @param ARorder order of autoregressive component, defaults to NULL for optimizing choice, see MAorder
+#' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' case the latest available date is used
+#' @return instance of S3 class Arima_sars2pack
+#' @examples
+#' nytc = nytimes_county_data()
+#' Arima_by_county(nytc)
+#' @export
+Arima_by_county = function(src, state.in="Massachusetts", county.in="Norfolk", MAorder=NULL,
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
+   cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in & county==county.in) 
+   ibyd = form_inc_county(cbyd, regtag=paste(county.in, "/", state.in, sep="/"), max_date=max_date)
+   tc = match.call()
+   if (is.null(MAorder) | is.null(ARorder)) {
+     mb = min_bic(src=src, state.in=state.in, county.in=county.in, basedate=basedate, lookback_days=lookback_days,
+        max_date=max_date)
+     MAorder = mb$opt["MAord"]
+     ARorder = mb$opt["ARord"]
+     }
+   .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+      max_date=max_date, topcall=tc)
    }
