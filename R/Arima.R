@@ -297,22 +297,27 @@ print.Arima_sars2pack = function(x, ...) {
 
 #' @export
 plot.Arima_sars2pack = function(x, y, ...) {
- y_ = x$tsfull
- x_ = x$origin+x$time.from.origin
- plot(x_, y_, pch=19, xlab="date", ylab="incidence", ...)
- lines(x$origin+x$time.from.origin, x$pred)
- if (x$Difforder==1) {
-  slo = coef(x$fit)["drift"]
-  y1 = median(y_) #x$pred[29]
-  y0 = y1 + slo*(-as.numeric(x$origin)-13) # x$time.from.origin[29] = 28
-  abline(y0, slo, lty=2, lwd=2)
-  se = sqrt(x$fit$var.coef["drift", "drift"])
-  y1b = slo*(14+as.numeric(x$origin))+y0
-  y0p = y1b + (slo+1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
-  y0m = y1b + (slo-1.96*se)*(-as.numeric(x$origin)-14) # x$time.from.origin[1] = 0
-  abline(y0p, slo+1.96*se, lty=3, col="gray")
-  abline(y0m, slo-1.96*se, lty=3, col="gray")
- }
+# revised 8 jul to deal better with short series
+    y_ = x$tsfull
+    x_ = x$origin + x$time.from.origin
+    yshift = floor(length(x_)/2)
+    plot(x_, y_, pch = 19, xlab = "date", ylab = "incidence", 
+        ...)
+    lines(x$origin + x$time.from.origin, x$pred)
+    if (x$Difforder == 1) {
+        slo = coef(x$fit)["drift"]
+        y1 = median(y_)
+        y0 = y1 + slo * (-as.numeric(x$origin) - yshift)
+        abline(y0, slo, lty = 2, lwd = 2)
+        se = sqrt(x$fit$var.coef["drift", "drift"])
+        y1b = slo * (yshift+1 + as.numeric(x$origin)) + y0
+        y0p = y1b + (slo + 1.96 * se) * (-as.numeric(x$origin) - 
+            yshift-1)
+        y0m = y1b + (slo - 1.96 * se) * (-as.numeric(x$origin) - 
+            yshift-1)
+        abline(y0p, slo + 1.96 * se, lty = 3, col = "gray")
+        abline(y0m, slo - 1.96 * se, lty = 3, col = "gray")
+    }
 }
 
 #' fit ARIMA model to US data dropping one state

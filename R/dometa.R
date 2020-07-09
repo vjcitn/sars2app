@@ -32,3 +32,50 @@ run_meta = function(nyd, opt_parms, ...) {
  list(drifts=drifts, se.drifts=se.drifts)
 }
 
+#' county within state metaanalysis of incidence velocity
+#' @param nytc nytimes_county_data() output
+#' @param state.in character(1)
+#' @param verbose logical(1) will print '.' after each county's optimal AR/MA orders found
+#' @param \dots passed to `Arima_by_county`
+#' @note The search for optimal AR/MA orders may throw warnings.
+#' @examples
+#' nytc = nytimes_county_data()
+#' m1 = run_meta_county(nytc)
+#' names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
+#' rmeta::meta.summaries(m1$drifts, m1$se.drifts)
+#' o = order(m1$drifts)
+#' rmeta::metaplot(m1$drifts[o], m1$se.drifts[o], labels=names(m1$drifts)[o], cex=.7, 
+#'   xlab="Infection velocity (CHANGE in number of confirmed cases/day)", ylab="County")
+#' @export
+run_meta_county = function(nytc, state.in="Massachusetts", verbose=TRUE, ...) {
+ allc = unique(nytc$county[which(nytc$state==state.in)])
+ nc = parallel::detectCores()-1
+ options(mc.cores=nc)
+ allarima = lapply(allc, function(x) {
+   if (verbose) cat(".")
+   Arima_by_county(nytc, state.in=state.in, county.in=x, ARorder=NULL, MAorder=NULL, ...)
+   })
+ ng = sapply(allarima, inherits, "try-error")
+ dropped = NULL
+ names(allarima) = allc
+ if (sum(ng)>0) {
+    message("could not find BIC-optimal ARMA orders for some counties")
+    print(dropped <- allc[which(ng)])
+    message("dropping data on these")
+    allarima = allarima[-which(ng)]
+    }
+ drifts = sapply(allarima, function(x) coef(x$fit)["drift"])
+ searima = function(a) sqrt(a$fit$var.coef["drift", "drift"])
+ se.drifts = sapply(allarima, searima)
+ ans = list(drifts=drifts, se.drifts=se.drifts, dropped=dropped)
+ class(ans) = "meta_county_sars2app"
+ ans
+}
+
+#' @export
+plot.meta_county_sars2app = function(x, y, ..., cex.in=.7) {
+ names(x$drifts) = gsub(".drift", "", names(x$drifts))
+ o = order(x$drifts)
+ rmeta::metaplot(x$drifts[o], x$se.drifts[o], labels=names(x$drifts)[o], cex=cex.in,
+   xlab="Infection velocity (CHANGE in number of confirmed cases/day)", ylab="County")
+}
