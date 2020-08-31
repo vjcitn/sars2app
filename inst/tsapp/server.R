@@ -30,6 +30,10 @@ library(shinytoastr)
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
                        max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+   else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
+                   states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
+                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
    else if (input$source != "fullusa") 
         curfit = Arima_by_state(.nyd.global, state.in=input$source, 
                    Difforder=input$Difforder, MAorder=input$MAorder, 
@@ -54,6 +58,10 @@ library(shinytoastr)
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                  states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
                  max_date=input$maxdate)
+   else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
+        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
+                   states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
+                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
    else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)

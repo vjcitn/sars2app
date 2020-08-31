@@ -40,7 +40,7 @@ Code derived from the ", a(href="https://seandavi.github.io/sars2pack", "sars2pa
 See 'About' tab for additional details."),
     selectInput("source", "source", choices=c("fullusa", allst), selected="fullusa"),
     radioButtons("excl", "exclude from fullusa", choices=c("none", "New York", "NY,NJ", "NY,NJ,MA",
-                  "NY,NJ,MA,PA"), selected="none"),
+                  "NY,NJ,MA,PA", "AZ,TX,CA,LA,FL"), selected="none"),
     dateInput("maxdate", "look back from", min="2020-03-15", max=max(lubridate::as_date(.nyd.global$date)),
          value=max(lubridate::as_date(.nyd.global$date))),
     numericInput("MAorder", "MA order", min=0, max=6, value=usa_parms$opt["MAord"]), 
