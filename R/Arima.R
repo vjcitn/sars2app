@@ -317,7 +317,8 @@ plot.Arima_sars2pack = function(x, y, ...) {
             yshift-1)
         abline(y0p, slo + 1.96 * se, lty = 3, col = "gray", lwd=2)
         abline(y0m, slo - 1.96 * se, lty = 3, col = "gray", lwd=2)
-        legend("topright", lty=c(1,2,3), lwd=c(1,2,2), legend=c("ARIMA fit", "drift component", "drift +/- 1.96sedrift"))
+        legend("topleft", lty=c(1,2,3), lwd=c(1,2,2), 
+                  legend=c("ARIMA fit", "drift component", "drift +/- 1.96sedrift"), bg="transparent")
     }
 }
 
