@@ -1,3 +1,8 @@
+#' generalize type of event modeled
+#' @keyword internal
+event_tag = function() "confirmed"  # change to "deaths" if you want
+#event_tag = function() "deaths"  # change to "deaths" if you want
+
 
 #' a two-dimensional grid of integers
 #' @param n maximum value, will expand.grid(0:n,0:n) with colnames arorder, maorder
@@ -207,7 +212,7 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=NULL,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
-   cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in) 
+   cbyd = dplyr::filter(src, date >= basedate & subset==event_tag() & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    tc = match.call()
    if (is.null(MAorder) | is.null(ARorder)) {
@@ -243,7 +248,7 @@ Arima_by_state = function(src, state.in="New York", MAorder=NULL,
 Arima_nation = function(ejhu, alp3="USA", MAorder=2,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL,
    curbic=NULL) {
-   cbyd = dplyr::filter(ejhu, date >= basedate & subset=="confirmed" & alpha3Code==alp3)
+   cbyd = dplyr::filter(ejhu, date >= basedate & subset==event_tag() & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
    if (!is.null(curbic)) {
     ARorder = curbic$opt["ARord"]
@@ -360,7 +365,7 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
    st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
          lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    cbyd_shim = dplyr::filter(src_st,  # shim
-            date >= basedate & subset=="confirmed" & state==state.in)
+            date >= basedate & subset==event_tag() & state==state.in)
    ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in, max_date=max_date)
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(st$tsfull)
    .Arima_inc(ibyd_shim, state.in=paste("excl", state.in), MAorder=MAorder,
@@ -389,7 +394,7 @@ Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jerse
          lookback_days=lookback_days, ARorder=ARorder, max_date=max_date))
    names(sts) = states.in
    cbyd_shims = lapply(states.in, function(x) dplyr::filter(src_st,  # shim
-            date >= basedate & subset=="confirmed" & state==x))
+            date >= basedate & subset==event_tag() & state==x))
    names(cbyd_shims) = states.in
    ibyd_shims = lapply(states.in, function(x) form_inc_state(cbyd_shims[[x]], regtag=x, max_date=max_date))
    ibyd_shim = ibyd_shims[[1]]
@@ -415,7 +420,7 @@ Arima_contig_states = function(src, state.in="All contig", MAorder=2,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0,
    contig_vec = contig_states_twolet(), max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & 
-       subset=="confirmed" & state %in% contig_vec)
+       subset==event_tag() & state %in% contig_vec)
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    .Arima_inc(ibyd, state.in="all", MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
@@ -440,7 +445,7 @@ Arima_contig_states = function(src, state.in="All contig", MAorder=2,
 #' @export
 Arima_by_county = function(src, state.in="Massachusetts", county.in="Norfolk", MAorder=NULL,
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
-   cbyd = dplyr::filter(src, date >= basedate & subset=="confirmed" & state==state.in & county==county.in) 
+   cbyd = dplyr::filter(src, date >= basedate & subset==event_tag() & state==state.in & county==county.in) 
    ibyd = form_inc_county(cbyd, regtag=paste(county.in, "/", state.in, sep="/"), max_date=max_date)
    tc = match.call()
    if (is.null(MAorder) | is.null(ARorder)) {
