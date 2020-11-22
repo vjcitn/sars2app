@@ -45,6 +45,7 @@ See 'About' tab for additional details."),
          value=max(lubridate::as_date(.nyd.global$date))),
     numericInput("MAorder", "MA order", min=0, max=6, value=usa_parms$opt["MAord"]), 
     numericInput("ARorder", "AR order", min=0, max=6, value=usa_parms$opt["ARord"]), # realtime intro 14 jun
+    actionButton("optbic", "optimize AR, MA"),
     numericInput("Difforder", "Difforder", min=0, max=2, value=1),
     actionButton("stopper", "stop app"),
     width=3),

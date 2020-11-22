@@ -14,7 +14,7 @@ library(shinytoastr)
 
  server = function(input, output, session) {
   dofit = reactive({
-   toastr_info("computing ARIMA model")
+   toastr_info("optimizing BIC; computing ARIMA model")
    if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
    else if (input$source == "fullusa" & input$excl == "New York") 
         curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate,
@@ -37,7 +37,7 @@ library(shinytoastr)
    else if (input$source != "fullusa") 
         curfit = Arima_by_state(.nyd.global, state.in=input$source, 
                    Difforder=input$Difforder, MAorder=input$MAorder, 
-                       ARorder=input$ARorder, max_date=input$maxdate)
+                       ARorder=input$ARorder, max_date=input$maxdate, min_bic_now=TRUE)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    validate(need(all(is.finite(coef(curfit$fit))), "non-finite coefficient produced; please alter AR or MA order"))
    validate(need(all(diag(curfit$fit$var.coef)>0), "covariance matrix has diagonal element < 0; please alter AR or MA order"))
@@ -62,7 +62,7 @@ library(shinytoastr)
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
                        max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
-   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
+   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate, min_bic=FALSE)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
@@ -79,12 +79,12 @@ library(shinytoastr)
    })
   output$rept = renderPrint({ 
     ans = dofit()
-   validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
+   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order"))
     ans$fit
    })
   output$tsdiag = renderPlot({ 
     ans = dofit()
-   validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
+   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order"))
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
@@ -111,6 +111,11 @@ library(shinytoastr)
     segments(rep(-350,46), seq(-49,-4), rep(-50,46), seq(-49,-4), lty=3, col="gray")
    })
   observeEvent(input$stopper, {
+       ans = dofit()
+       validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
+       stopApp(returnValue=ans$fit)
+       })  
+  observeEvent(input$optbic, {
        ans = dofit()
        validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
        stopApp(returnValue=ans$fit)

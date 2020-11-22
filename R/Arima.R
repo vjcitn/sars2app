@@ -1,5 +1,5 @@
 #' generalize type of event modeled
-#' @keyword internal
+#' @keywords internal
 event_tag = function() "confirmed"  # change to "deaths" if you want
 #event_tag = function() "deaths"  # change to "deaths" if you want
 
@@ -196,6 +196,7 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' @param ARorder order of autoregressive component
 #' @param max_date a date from which to start lookback ... defaults to NULL in which
 #' case the latest available date is used
+#' @param min_bic_now logical(1) if TRUE, obtain AR and MA orders by grid search for this call
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' nyd = nytimes_state_data()
@@ -211,11 +212,12 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' lknyNULL
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=NULL,
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL,
+   min_bic_now=FALSE) {
    cbyd = dplyr::filter(src, date >= basedate & subset==event_tag() & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    tc = match.call()
-   if (is.null(MAorder) | is.null(ARorder)) {
+   if (is.null(MAorder) | is.null(ARorder) | min_bic_now) {
      mb = min_bic(src=src, state.in=state.in, basedate=basedate, lookback_days=lookback_days,
         max_date=max_date)
      MAorder = mb$opt["MAord"]
