@@ -12,8 +12,7 @@ Arima_by_state(
   basedate = "2020-02-15",
   lookback_days = 29,
   ARorder = NULL,
-  max_date = NULL,
-  min_bic_now = FALSE
+  max_date = NULL
 )
 }
 \arguments{
@@ -33,8 +32,6 @@ Arima_by_state(
 
 \item{max_date}{a date from which to start lookback ... defaults to NULL in which
 case the latest available date is used}
-
-\item{min_bic_now}{logical(1) if TRUE, obtain AR and MA orders by grid search for this call}
 }
 \value{
 instance of S3 class Arima_sars2pack

@@ -29,6 +29,7 @@ standard error of this estimate.
 
 For the US as a whole, as of May 20 2020:
 ```{r lkd1, cache=FALSE}
+library(sars2app)
 ej = enriched_jhu_data()
 usa_full = Arima_nation(ej, max_date="2020-05-20")
 usa_full

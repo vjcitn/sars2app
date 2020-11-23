@@ -10,35 +10,35 @@ library(shinytoastr)
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
- data(list="min_bic_2020_10_21", package="sars2app")
+ data(list="min_bic_2020_11_22", package="sars2app")
 
  server = function(input, output, session) {
   dofit = reactive({
    toastr_info("optimizing BIC; computing ARIMA model")
-   if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, Difforder=input$Difforder, MAorder=input$MAorder, ARorder=input$ARorder, max_date=input$maxdate)
+   if (input$source == "fullusa" & input$excl == "none") curfit = Arima_nation(.jhu.global, Difforder=1, MAorder=NULL, ARorder=NULL, max_date=input$maxdate)
    else if (input$source == "fullusa" & input$excl == "New York") 
         curfit = Arima_drop_state(.jhu.global, .nyd.global, state.in=input$excl, max_date=input$maxdate,
-           MAorder=input$MAorder, ARorder=input$ARorder)
+           MAorder=NULL, ARorder=NULL)
    else if (input$source == "fullusa" & input$excl == "NY,NJ")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
-                   max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+                   max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source == "fullusa" & input$excl == "NY,NJ,MA")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("New York", "New Jersey", "Massachusetts"), 
-                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
-                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
-                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source != "fullusa") 
         curfit = Arima_by_state(.nyd.global, state.in=input$source, 
-                   Difforder=input$Difforder, MAorder=input$MAorder, 
-                       ARorder=input$ARorder, max_date=input$maxdate, min_bic_now=TRUE)
-   validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
+                   Difforder=1, MAorder=NULL, 
+                       ARorder=NULL, max_date=input$maxdate)
+   validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order (1)"))
    validate(need(all(is.finite(coef(curfit$fit))), "non-finite coefficient produced; please alter AR or MA order"))
    validate(need(all(diag(curfit$fit$var.coef)>0), "covariance matrix has diagonal element < 0; please alter AR or MA order"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
@@ -61,9 +61,9 @@ library(shinytoastr)
    else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
                    states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
-                       max_date=input$maxdate, MAorder=input$MAorder, ARorder=input$ARorder)
-   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate, min_bic=FALSE)
-   validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order"))
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
+   else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
+   validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order (2)"))
    list(fit=curfit, pred=fitted.values(forecast(curfit$fit)), tsfull=curfit$tsfull, dates29=curfit$dates29)
    })
   output$traj = renderPlot({
@@ -79,16 +79,16 @@ library(shinytoastr)
    })
   output$rept = renderPrint({ 
     ans = dofit()
-   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order"))
+   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order (3)"))
     ans$fit
    })
   output$tsdiag = renderPlot({ 
     ans = dofit()
-   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order"))
+   validate(need(!inherits(ans$fit, "try-error"), "please alter AR or MA order (4)"))
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
-    run_meta(.nyd.global, opt_parms=min_bic_2020_10_21, Difforder=input$Difforder, 
+    run_meta(.nyd.global, opt_parms=min_bic_2020_11_22, Difforder=1,
             max_date=input$maxdate)  # note that AR/MA parms from opt_parms
   })
   output$meta.rept = renderPrint({ 
@@ -111,11 +111,6 @@ library(shinytoastr)
     segments(rep(-350,46), seq(-49,-4), rep(-50,46), seq(-49,-4), lty=3, col="gray")
    })
   observeEvent(input$stopper, {
-       ans = dofit()
-       validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
-       stopApp(returnValue=ans$fit)
-       })  
-  observeEvent(input$optbic, {
        ans = dofit()
        validate(need(!inherits(ans$fit, "try-error"), "please alter AR order"))
        stopApp(returnValue=ans$fit)

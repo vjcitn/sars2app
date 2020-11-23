@@ -196,7 +196,6 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' @param ARorder order of autoregressive component
 #' @param max_date a date from which to start lookback ... defaults to NULL in which
 #' case the latest available date is used
-#' @param min_bic_now logical(1) if TRUE, obtain AR and MA orders by grid search for this call
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' nyd = nytimes_state_data()
@@ -212,14 +211,13 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' lknyNULL
 #' @export
 Arima_by_state = function(src, state.in="New York", MAorder=NULL,
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL,
-   min_bic_now=FALSE) {
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL) {
    cbyd = dplyr::filter(src, date >= basedate & subset==event_tag() & state==state.in) 
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
    tc = match.call()
-   if (is.null(MAorder) | is.null(ARorder) | min_bic_now) {
-     mb = min_bic(src=src, state.in=state.in, basedate=basedate, lookback_days=lookback_days,
-        max_date=max_date)
+   if (is.null(MAorder) | is.null(ARorder) ) {
+     mb = try(min_bic(src=src, state.in=state.in, basedate=basedate, lookback_days=lookback_days,
+        max_date=max_date))
      MAorder = mb$opt["MAord"]
      ARorder = mb$opt["ARord"]
      }
@@ -237,25 +235,23 @@ Arima_by_state = function(src, state.in="New York", MAorder=NULL,
 #' @param lookback_days numeric(1) only uses this many days from most recent in ejhu
 #' @param ARorder order of autoregressive component
 #' @param max_date a date from which to start lookback ... defaults to NULL in which
-#' @param curbic an instance of S3 class bic_seq
 #' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' ej = enriched_jhu_data()
-#' curbic = min_bic(ej, fullusa=TRUE)
-#' lkus = Arima_nation(ej, curbic=curbic)
+#' lkus = Arima_nation(ej)
 #' lkus
 #' plot(lkus)
 #' @export
-Arima_nation = function(ejhu, alp3="USA", MAorder=2,
-   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL,
-   curbic=NULL) {
+Arima_nation = function(ejhu, alp3="USA", MAorder=NULL,
+   Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=NULL, max_date=NULL ) {
    cbyd = dplyr::filter(ejhu, date >= basedate & subset==event_tag() & alpha3Code==alp3)
    ibyd = form_inc_nation(cbyd, regtag=alp3, max_date=max_date)
-   if (!is.null(curbic)) {
-    ARorder = curbic$opt["ARord"]
-    MAorder = curbic$opt["MAord"]
-    }
+   if (is.null(ARorder) | is.null(MAorder)) {
+     curbic = min_bic(ejhu, fullusa=TRUE)
+     ARorder = curbic$opt["ARord"]
+     MAorder = curbic$opt["MAord"]
+     }
    tc = match.call()
    .Arima_inc(ibyd, state.in=alp3, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
@@ -362,16 +358,22 @@ plot.Arima_sars2pack = function(x, y, ...) {
 #' @export
 Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2, 
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL) {
-   nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
-         lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
-   st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
-         lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
+   curbic = min_bic(src_us, fullusa=TRUE)
+   ARorder_nat = curbic$opt["ARord"]
+   MAorder_nat = curbic$opt["MAord"]
+   nat = Arima_nation(src_us, MAorder=MAorder_nat, Difforder=Difforder, basedate=basedate,
+         lookback_days=lookback_days, ARorder=ARorder_nat, max_date=max_date)
+   stbic = min_bic(src_st, fullusa=FALSE)
+   ARorder_st = stbic$opt["ARord"]
+   MAorder_st = stbic$opt["MAord"]
+   st = Arima_by_state(src_st, state.in=state.in, MAorder=MAorder_st, Difforder=Difforder, basedate=basedate,
+         lookback_days=lookback_days, ARorder=ARorder_st, max_date=max_date)
    cbyd_shim = dplyr::filter(src_st,  # shim
             date >= basedate & subset==event_tag() & state==state.in)
    ibyd_shim = form_inc_state(cbyd_shim, regtag=state.in, max_date=max_date)
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(st$tsfull)
-   .Arima_inc(ibyd_shim, state.in=paste("excl", state.in), MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+   .Arima_inc(ibyd_shim, state.in=paste("excl", state.in), MAorder=MAorder_nat,
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder_nat,
            max_date=max_date)
    }
 
@@ -389,8 +391,11 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 #' @export
 Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jersey"), MAorder=3, 
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL, ARorder.nat=3) {
-   nat = Arima_nation(src_us, MAorder=MAorder, Difforder=Difforder, basedate=basedate,
-         lookback_days=lookback_days, ARorder=ARorder.nat, max_date=max_date)
+   curbic = min_bic(src_us, fullusa=TRUE)
+   ARorder_nat = curbic$opt["ARord"]
+   MAorder_nat = curbic$opt["MAord"]
+   nat = Arima_nation(src_us, MAorder=MAorder_nat, Difforder=Difforder, basedate=basedate,
+         lookback_days=lookback_days, ARorder=ARorder_nat, max_date=max_date)
    sts = lapply(states.in, function(x) Arima_by_state(src_st, state.in=x, 
          MAorder=MAorder, Difforder=Difforder, basedate=basedate,
          lookback_days=lookback_days, ARorder=ARorder, max_date=max_date))
@@ -403,8 +408,8 @@ Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jerse
    ibyd_shim$count = as.numeric(nat$tsfull)-as.numeric(sts[[1]]$tsfull)
    for (i in 2:length(ibyd_shims)) 
        ibyd_shim$count = as.numeric(ibyd_shim$count)-as.numeric(sts[[i]]$tsfull)
-   .Arima_inc(ibyd_shim, state.in=paste("excl", paste(states.in, collapse=", ")), MAorder=MAorder,
-      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
+   .Arima_inc(ibyd_shim, state.in=paste("excl", paste(states.in, collapse=", ")), MAorder=MAorder_nat,
+      Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder_nat,
            max_date=max_date)
    }
 
@@ -424,6 +429,11 @@ Arima_contig_states = function(src, state.in="All contig", MAorder=2,
    cbyd = dplyr::filter(src, date >= basedate & 
        subset==event_tag() & state %in% contig_vec)
    ibyd = form_inc_state(cbyd, regtag=state.in, max_date=max_date)
+   if (is.null(MAorder) | is.null(ARorder)) {
+     curbic = min_bic(src, fullusa=TRUE)
+     ARorder = curbic$opt["ARord"]
+     MAorder = curbic$opt["MAord"]
+     }
    .Arima_inc(ibyd, state.in="all", MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder, max_date=max_date)
    }

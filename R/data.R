@@ -27,3 +27,8 @@
 #' @docType data
 #' @format S3 instance
 "min_bic_2020_10_21"
+
+#' a statewide collection of best AR/MA model orders, 11/22
+#' @docType data
+#' @format S3 instance
+"min_bic_2020_11_22"
