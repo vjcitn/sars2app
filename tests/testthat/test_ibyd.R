@@ -54,7 +54,7 @@ context("test server.R code for app")
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
- data(list="min_bic_2020_05_20", package="sars2app")
+ data(list="min_bic_2020_11_25", package="sars2app")
 
 known_Arima_sars2pack_components = c("fit", "pred", "tsfull", "dates29", "time.from.origin", "call", 
 "state", "origin", "MAorder", "Difforder", "ARorder", "max_date"
@@ -101,10 +101,10 @@ test_that("by state succeeds", {
 })
 
 test_that("run_meta succeeds", {
-   data(list="min_bic_2020_06_12", package="sars2app")
+   data(list="min_bic_2020_11_25", package="sars2app")
    input = list()
    input$Difforder=1
-   mchk = run_meta(.nyd.global, opt_parms=min_bic_2020_06_12, Difforder=input$Difforder, 
+   mchk = run_meta(.nyd.global, opt_parms=min_bic_2020_11_25, Difforder=input$Difforder, 
              max_date=input$maxdate)  # note that AR/MA parms from opt_parms
    expect_true(all(c("drifts", "se.drifts") %in% names(mchk)))
   })
