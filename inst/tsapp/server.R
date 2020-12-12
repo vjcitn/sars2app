@@ -88,8 +88,16 @@ library(shinytoastr)
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
-    run_meta(.nyd.global, opt_parms=min_bic_2020_11_25, Difforder=1,
-            max_date=input$maxdate)  # note that AR/MA parms from opt_parms
+    z = try(run_meta(.nyd.global, opt_parms=min_bic_2020_11_25, Difforder=1,
+            max_date=input$maxdate), silent=TRUE)  # note that AR/MA parms from opt_parms
+    if (inherits(z, "try-error")) {
+         toastr_info("for selected date, we need to rerun state-specific BICs... hold on")
+         suppressMessages({
+         mball = min_bic_all_states(.nyd.global, max_date = input$maxdate)
+         })
+         z = run_meta(.nyd.global, opt_parms=mball, Difforder=1, max_date=input$maxdate)
+         }
+    z
   })
   output$meta.rept = renderPrint({ 
     m1 = dometa()

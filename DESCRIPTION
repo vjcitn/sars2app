@@ -1,8 +1,8 @@
 Package: sars2app
 Title: COVID-19 data resources and analysis tools cut down for an interactive app
 Description: The sars2pack package includes COVID-19 data resources, analysis tools, and workflows in R.
-Version: 0.0.54-49
-Date: 2020-08-25
+Version: 0.0.54-50
+Date: 2020-12-12
 Authors@R: c(person("Sean", "Davis", role = c("aut"),
                     email = 'seandavi@gmail.com',
                     comment = c('ORCID'="0000-0002-8991-6458")),
@@ -25,10 +25,10 @@ Suggests:
     dbplyr,
     rmarkdown,
     zoo
-Depends: R (>= 3.5.0)
+Depends: R (>= 4.0)
 Imports: methods, utils, lubridate, magrittr, dplyr, tidyr, countrycode,
     openxlsx, tibble, jsonlite, httr, readr, BiocFileCache, forecast,
-    graphics, stats, rmeta, EpiEstim, shinytoastr, parallel
+    graphics, stats, rmeta, EpiEstim, shinytoastr, parallel, runner
 Url: https://github.com/vjcitn/sars2app
 BugReports: https://github.com/seandavi/sars2pack/issues/new
 License: MIT + file LICENSE

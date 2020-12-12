@@ -217,7 +217,7 @@ Arima_by_state = function(src, state.in="New York", MAorder=NULL,
    tc = match.call()
    if (is.null(MAorder) | is.null(ARorder) ) {
      mb = try(min_bic(src=src, state.in=state.in, basedate=basedate, lookback_days=lookback_days,
-        max_date=max_date))
+        max_date=max_date), silent=TRUE)
      MAorder = mb$opt["MAord"]
      ARorder = mb$opt["ARord"]
      }
@@ -270,7 +270,7 @@ Arima_nation = function(ejhu, alp3="USA", MAorder=NULL,
    origin = max(ibyd$date)-lookback_days+1
    time.from.origin = as.numeric(dates29-origin)
    tsfull = ts(full29, freq=1)
-   Arima.full = try(Arima(tsfull, order=c(ARorder,Difforder,MAorder), include.drift=TRUE))
+   Arima.full = try(Arima(tsfull, order=c(ARorder,Difforder,MAorder), include.drift=TRUE), silent=TRUE)
    if (inherits(Arima.full, "try-error")) {
      print(c(ARorder,Difforder,MAorder))
      print(Arima.full)
