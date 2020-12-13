@@ -10,7 +10,9 @@ plot_sync(
   maxdate = Inf,
   shift = 26,
   winsize = 14,
-  na_pad = TRUE
+  na_pad = TRUE,
+  xlim.in = NULL,
+  yspan = 0.25
 )
 }
 \arguments{
@@ -26,6 +28,10 @@ formed by differencing the cumulative counts provided in sars2pack}
 \item{winsize}{size of running window for averaging incident counts for plotting}
 
 \item{na_pad}{logical(1) passed to runner::mean_run}
+
+\item{xlim.in}{defaults to NULL, standard graphics::plot xlim, or can be a numeric(2)}
+
+\item{yspan}{log-scale extra padding for y extent, expanding range of log(incident cases)+log cIFR}
 }
 \description{
 display synchronized death and confirmed case series

@@ -22,6 +22,8 @@ resync = function(dfr, shift=26) {
 #' @param shift number of days to backshift death counts, coerced to integer
 #' @param winsize size of running window for averaging incident counts for plotting
 #' @param na_pad logical(1) passed to runner::mean_run
+#' @param xlim.in defaults to NULL, standard graphics::plot xlim, or can be a numeric(2)
+#' @param yspan log-scale extra padding for y extent, expanding range of log(incident cases)+log cIFR
 #' @note The 'IFR' is crudely estimated as exp(mean(log(deaths)-log(confirmed))).
 #' 
 #' @examples
@@ -38,74 +40,38 @@ resync = function(dfr, shift=26) {
 #' uscd = data.frame(date=usc2$date, confirmed=usc2$inc, deaths=usd2$inc)
 #' plot_sync(uscd)
 #' @export
-plot_sync = function(dfr, basedate = "2020-05-01", maxdate=Inf, shift=26, winsize=14, na_pad=TRUE) {
+plot_sync = function(dfr, basedate = "2020-05-01", maxdate=Inf, shift=26, winsize=14, 
+     na_pad=TRUE, xlim.in=NULL, yspan=.25) {
    dfr = dplyr::filter(dfr, date >= basedate & date < maxdate)
    dfr = resync( dfr, shift )
    phi = mean(log(dfr$deaths)-log(dfr$confirmed))
    smc = mean_run(dfr$confirmed, winsize, na_pad=na_pad)
    smd = mean_run(dfr$deaths, winsize, na_pad=na_pad)
-   plot(I(log(smc)+phi)~dfr$date, type="l", lty=1, lwd=2, col="gray", xlab="Date", ylab="log 'incidence'")
+   yrng = range(c(log(smc)+phi, log(smd)), na.rm=TRUE)
+   plot(I(log(smc)+phi)~dfr$date, type="l", lty=1, lwd=2, col="gray", xlab="Date", ylab="log 'incidence'",
+           ylim=yrng+c(-yspan,yspan), xlim=xlim.in)
    lines(log(smd)~dfr$date, lty=2, lwd=2)
-   legend(x="topleft", lty=1:2, lwd=2, legend=c(paste("log confirmed", round(phi,3), "[IFR", 100*round(exp(phi),3), "%]"), 
+   dvals = c(seq(10,200,20),500, 1000, 2000)
+   axis(4, at = log(dvals), labels=dvals)
+   mtext("deaths", side=4)
+   legend(x="topleft", lty=1:2, lwd=2, 
+        col = c("gray", "black"),
+        legend=c(paste("log confirmed", round(phi,3), "[cIFR", 100*round(exp(phi),3), "%]"), 
           paste("deaths (shifted by", shift, "days)")))
 }
-#
-#lines(log(deaths)~date, data=sh)
-#nls(log(deaths)~log(phi)+log(confirmed), data=resync(uscd,26), start=list(phi=-4.5))
-#with(resync(uscd, 26) mean(log(deaths)-log(confirmed))
-#with(resync(uscd, 26), mean(log(deaths)-log(confirmed))
-#)
-#summary(resync(ucsd,26)$deaths)
-#summary(resync(ucsdn,26)$deaths)
-#summary(resync(uscdn,26)$deaths)
-#with(resync(uscdn, 26), mean(log(deaths)-log(confirmed))
-#)
-#with(resync(uscdn, 26), mean(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 26), sd(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 24), sd(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 28), sd(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 30), sd(log(deaths)-log(confirmed)))
-#sds = sapply(24:30, function(x) with(resync(uscdn, x), sd(log(deaths)-log(confirmed)))
-#)
-#plot(24:30, sds)
-#sds = sapply(22:32, function(x) with(resync(uscdn, x), sd(log(deaths)-log(confirmed))))
-#plot(22:32, sds)
-#sds = sapply(20:34, function(x) with(resync(uscdn, x), sd(log(deaths)-log(confirmed))))
-#plot(20:34, sds, pch=19, cex=1.5)
-#sds = sapply(15:40, function(x) with(resync(uscdn, x), sd(log(deaths)-log(confirmed))))
-#plot(15:40, sds, pch=19, cex=1.5)
-#with(resync(uscdn, 26), mean(log(deaths)-log(confirmed))))
-#with(resync(uscdn, 26), mean(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 21), mean(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 28), mean(log(deaths)-log(confirmed)))
-#exp(-4.14)
-#exp(-4.09)
-#with(resync(uscdn, 21), hist(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 28), hist(log(deaths)-log(confirmed)))
-#with(resync(uscdn, 28), qqnorm(log(deaths)-log(confirmed)))
-#sds = sapply(10:50, function(x) with(resync(uscdn, x), sd(log(deaths)-log(confirmed))))
-#plot(10:50, sds)
-#library(runner)
-#ls(2)
-#?window_run
-#?mean_run
-#D28 = resync(uscdn, 28)
-#c28 = mean_run(D28$confirmed, 14)
-#plot(c28)
-#d28 = mean_run(D28$deaths, 14)
-#plot(log(c28)-4.5)
-#lines(d28)
-#lines(y=d28)
-#lines(x=1:length(d28),y=d28)
-#lines(x=1:length(d28),y=log(d28))
-#mean(log(c28)-log(d28))
-#plot(log(c28)-4)
-#lines(x=1:length(d28),y=log(d28))
-#head(d28)
-#head(c28)
-#D21 = resync(uscdn, 21)
-#c21 = mean_run(D21$confirmed, 14)
-#d21 = mean_run(D21$deaths, 14)
-#mean(log(c21)-log(d21))
-#plot(log(c21)-4.06)
-#lines(x=1:length(d21),y=log(d21))
+
+
+#' shiny app for appraisal of synchronization of death incidence and confirmed infection incidence peaks
+#' @export
+syncapp = function() {
+ od = getwd()
+ on.exit(setwd(od))
+ uif = system.file("syncapp/ui.R", package="sars2app")
+ servf = system.file("syncapp/server.R", package="sars2app")
+ td = tempdir()
+ setwd(td)
+ file.copy(uif, ".", overwrite=TRUE)
+ file.copy(servf, ".", overwrite=TRUE)
+ shiny::runApp()
+}
+
