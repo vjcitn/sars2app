@@ -25,6 +25,7 @@ resync = function(dfr, shift=26) {
 #' @param xlim.in defaults to NULL, standard graphics::plot xlim, or can be a numeric(2)
 #' @param yspan log-scale extra padding for y extent, expanding range of log(incident cases)+log cIFR
 #' @note The 'IFR' is crudely estimated as exp(mean(log(deaths)-log(confirmed))).
+#' @return a list with elements x, y, date, invisibly
 #' 
 #' @examples
 #' if (!exists("jh")) jh = enriched_jhu_data()
@@ -47,7 +48,9 @@ plot_sync = function(dfr, basedate = "2020-05-01", maxdate=Inf, shift=26, winsiz
    phi = mean(log(dfr$deaths)-log(dfr$confirmed))
    smc = mean_run(dfr$confirmed, winsize, na_pad=na_pad)
    smd = mean_run(dfr$deaths, winsize, na_pad=na_pad)
+   #yrng = range(c(1,log(smc)+phi, log(smd)), na.rm=TRUE)
    yrng = range(c(log(smc)+phi, log(smd)), na.rm=TRUE)
+   #if (yrng[2] > 6) yrng[1] = max(c(4, yrng[1]))
    plot(I(log(smc)+phi)~dfr$date, type="l", lty=1, lwd=2, col="gray", xlab="Date", ylab="log 'incidence'",
            ylim=yrng+c(-yspan,yspan), xlim=xlim.in)
    lines(log(smd)~dfr$date, lty=2, lwd=2)
@@ -58,6 +61,7 @@ plot_sync = function(dfr, basedate = "2020-05-01", maxdate=Inf, shift=26, winsiz
         col = c("gray", "black"),
         legend=c(paste("log confirmed", round(phi,3), "[cIFR", 100*round(exp(phi),3), "%]"), 
           paste("deaths (shifted by", shift, "days)")))
+   invisible(list(x=log(smc)+phi, y=log(smd), date=dfr$date))
 }
 
 

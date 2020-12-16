@@ -36,5 +36,18 @@ server = function(input, output) {
   plot_sync(dfr, basedate=input$basedate, maxdate=input$maxdate, shift=input$shift, winsize=input$winsize,
       xlim.in=c(input$basedate, input$maxdate))
  })
+ output$msek = renderPlot({
+  if (input$region == "USA") dfr = get_data()
+  else if (input$region != "USA") dfr = get_state_data()
+  validate(need(!is.na(input$winsize), "specify window size > 0"))
+  ktotry = 9:35
+  msek = function(k) { tmp = plot_sync(dfr, basedate=input$basedate, maxdate=input$maxdate, shift=k, winsize=input$winsize,
+      xlim.in=c(input$basedate, input$maxdate)) ;
+                       c(k=k, msd=mean((tmp$x-tmp$y)^2, na.rm=TRUE)) }
+  mses = lapply(ktotry, msek)
+  ks = sapply(mses, function(x) x["k"])
+  ms = sapply(mses, function(x) x["msd"])
+  plot(ks, ms, pch=19, cex=1.5, main="mean square discrepancy B^k d_t - c_t", xlab="k=lag", ylab="MSD(k)")
+ })
 }
 

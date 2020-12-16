@@ -28,19 +28,22 @@ and death incidence series"),
      max="2020-12-31", value="2020-12-25"),
    sliderInput("shift", "backshift for deaths", min=1, max=40, value=26, step=1,
      animate=TRUE),
-   numericInput("winsize", "window for series", min=1, max=40, value=14, step=1)
+   numericInput("winsize", "window for series", min=1, max=40, value=14, step=1), width=3
   ),
   mainPanel(
    tabsetPanel(
     tabPanel("plot",
      plotOutput("sync")
     ),
+    tabPanel("msek",
+     plotOutput("msek")
+    ),
     tabPanel("about",
      helpText("This app uses github.com/vjcitn/sars2app with enriched_jhu_data to
  produce incidence of confirmed COVID-19 and COVID-19 attributed demise.  cIFR
  denotes 'confirmed infection fatality rate.'")
     )
-   )
+   ), width=9
   )
  )
 )

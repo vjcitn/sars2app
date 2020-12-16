@@ -33,6 +33,9 @@ formed by differencing the cumulative counts provided in sars2pack}
 
 \item{yspan}{log-scale extra padding for y extent, expanding range of log(incident cases)+log cIFR}
 }
+\value{
+a list with elements x, y, date, invisibly
+}
 \description{
 display synchronized death and confirmed case series
 }
