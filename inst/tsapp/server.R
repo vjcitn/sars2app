@@ -10,7 +10,7 @@ library(shinytoastr)
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
- data(list="min_bic_2020_11_25", package="sars2app")
+ data(list="min_bic_2020_12_28", package="sars2app")
 
  server = function(input, output, session) {
   dofit = reactive({
@@ -22,17 +22,17 @@ library(shinytoastr)
    else if (input$source == "fullusa" & input$excl == "NY,NJ")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
                    max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA")
-        curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                   states.in=c("New York", "New Jersey", "Massachusetts"), 
+   else if (input$source == "fullusa" & input$excl == "IL")
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, 
+                   state.in=c("Illinois"),
                        max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
+   else if (input$source == "fullusa" & input$excl == "MI,MN,IL")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                   states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
+                   states.in=c("Michigan", "Minnesota", "Illinois"),
                        max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
-   else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
+   else if (input$source == "fullusa" & input$excl == "MI,MN,IL,OH,CO")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                   states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
+                   states.in=c("Michigan", "Minnesota", "Illinois", "Ohio", "Colorado"),
                        max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source != "fullusa") 
         curfit = Arima_by_state(.nyd.global, state.in=input$source, 
@@ -51,16 +51,17 @@ library(shinytoastr)
    else if (input$source == "fullusa" & input$excl == "NY,NJ") 
         curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey"), 
                  max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA") 
-        curfit = Arima_drop_states(.jhu.global, .nyd.global, states.in=c("New York", "New Jersey", "Massachusetts"), 
-                 max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl == "NY,NJ,MA,PA") 
+   else if (input$source == "fullusa" & input$excl == "IL")
+        curfit = Arima_drop_state(.jhu.global, .nyd.global, 
+                   state.in=c("Illinois"),
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
+   else if (input$source == "fullusa" & input$excl == "MI,MN,IL")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                 states.in=c("New York", "New Jersey", "Massachusetts", "Pennsylvania"), 
-                 max_date=input$maxdate)
-   else if (input$source == "fullusa" & input$excl == "AZ,TX,CA,LA,FL") 
+                   states.in=c("Michigan", "Minnesota", "Illinois"),
+                       max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
+   else if (input$source == "fullusa" & input$excl == "MI,MN,IL,OH,CO")
         curfit = Arima_drop_states(.jhu.global, .nyd.global, 
-                   states.in=c("Arizona", "Texas", "California", "Louisiana", "Florida"), 
+                   states.in=c("Michigan", "Minnesota", "Illinois", "Ohio", "Colorado"),
                        max_date=input$maxdate, MAorder=NULL, ARorder=NULL)
    else if (input$source != "fullusa") curfit = Arima_by_state(.nyd.global, state.in=input$source, max_date=input$maxdate)
    validate(need(!inherits(curfit, "try-error"), "please alter AR or MA order (2)"))
@@ -88,7 +89,7 @@ library(shinytoastr)
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
-    z = try(run_meta(.nyd.global, opt_parms=min_bic_2020_11_25, Difforder=1,
+    z = try(run_meta(.nyd.global, opt_parms=min_bic_2020_12_28, Difforder=1,
             max_date=input$maxdate), silent=TRUE)  # note that AR/MA parms from opt_parms
     if (inherits(z, "try-error")) {
          toastr_info("for selected date, we need to rerun state-specific BICs... hold on")

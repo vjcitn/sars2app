@@ -84,6 +84,7 @@ max(res$date)
 }
 \seealso{
 Other data-import: 
+\code{\link{descartes_mobility_data}()},
 \code{\link{jhu_data}()},
 \code{\link{jhu_us_data}()},
 \code{\link{nytimes_county_data}()}

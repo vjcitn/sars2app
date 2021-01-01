@@ -101,6 +101,7 @@ dplyr::glimpse(res)
 jhu_data(), usa_facts_data()
 
 Other data-import: 
+\code{\link{descartes_mobility_data}()},
 \code{\link{jhu_data}()},
 \code{\link{jhu_us_data}()},
 \code{\link{usa_facts_data}()}

@@ -18,8 +18,8 @@ obtain input to rmeta meta.summaries, metaplot
 }
 \examples{
 nyd = nytimes_state_data()
-data(min_bic_2020_06_30)
-m1 = run_meta(nyd, opt_parms=min_bic_2020_06_30) # must be relatively current
+data(min_bic_2020_12_28)
+m1 = run_meta(nyd, opt_parms=min_bic_2020_12_28) # must be relatively current
 rmeta::meta.summaries(m1$drifts, m1$se.drifts)
 names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
 nyind = which(names(m1$drifts) \%in\% c("New York", "New Jersey"))
