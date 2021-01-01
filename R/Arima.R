@@ -391,6 +391,8 @@ Arima_drop_state = function(src_us, src_st, state.in="New York", MAorder=2,
 #' @export
 Arima_drop_states = function(src_us, src_st, states.in= c("New York", "New Jersey"), MAorder=3, 
    Difforder=1, basedate="2020-02-15", lookback_days=29, ARorder=0, max_date=NULL, ARorder.nat=3) {
+   if (length(states.in)<2) message("use Arima_drop_state() for a single state exclusion")
+   stopifnot(length(states.in)>1)
    curbic = min_bic(src_us, fullusa=TRUE)
    ARorder_nat = curbic$opt["ARord"]
    MAorder_nat = curbic$opt["MAord"]

@@ -10,7 +10,7 @@ library(shinytoastr)
  if (!exists(".nyd.global")) .nyd.global <<- nytimes_state_data() # cumulative
  if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
  allst = sort(unique(.nyd.global$state))
- data(list="min_bic_2020_12_28", package="sars2app")
+ data(list="min_bic_2021_01_01", package="sars2app")
 
  server = function(input, output, session) {
   dofit = reactive({
@@ -89,7 +89,7 @@ library(shinytoastr)
     tsdiag(ans$fit$fit)
    })
   dometa = reactive({
-    z = try(run_meta(.nyd.global, opt_parms=min_bic_2020_12_28, Difforder=1,
+    z = try(run_meta(.nyd.global, opt_parms=min_bic_2021_01_01, Difforder=1,
             max_date=input$maxdate), silent=TRUE)  # note that AR/MA parms from opt_parms
     if (inherits(z, "try-error")) {
          toastr_info("for selected date, we need to rerun state-specific BICs... hold on")
