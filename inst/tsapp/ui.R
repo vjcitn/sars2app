@@ -27,7 +27,7 @@ library(shinytoastr)
  basedate = "2020-02-15" # data prior to this date are dropped completely
  lookback_days = 29 # from present date
  if (!exists(".nyd.global")).nyd.global <<- nytimes_state_data() # cumulative
- if (!exists(".jhu.global")) .jhu.global <<- enriched_jhu_data() # cumulative
+ if (!exists(".jhu.global")) .jhu.global <<- jhu_data() # cumulative
  #usa_parms = min_bic(.jhu.global, fullusa=TRUE)
  allst = sort(unique(.nyd.global$state))
  ui = fluidPage(
@@ -39,8 +39,8 @@ Code derived from the ", a(href="https://seandavi.github.io/sars2pack", "sars2pa
 " data science and documentation portal.
 See 'About' tab for additional details."),
     selectInput("source", "source", choices=c("fullusa", allst), selected="fullusa"),
-    radioButtons("excl", "exclude from fullusa", choices=c("none", "New York", "NY,NJ", "IL", "MI,MN,IL",
-                  "MI,MN,IL,OH,CO"), selected="none"),
+    radioButtons("excl", "exclude from fullusa", choices=c("none", "New York", 
+        "TX", "TX,CA", "TX,CA,GA", "TX,CA,GA,FL"), selected="none"),
     dateInput("maxdate", "look back from", min="2020-03-15", max=max(lubridate::as_date(.nyd.global$date)),
          value=max(lubridate::as_date(.nyd.global$date))),
     actionButton("stopper", "stop app"),

@@ -30,8 +30,7 @@ Arima_by_state(
 
 \item{ARorder}{order of autoregressive component}
 
-\item{max_date}{a date from which to start lookback ... defaults to NULL in which
-case the latest available date is used}
+\item{max_date}{a date from which to start lookback ... defaults to NULL in which}
 }
 \value{
 instance of S3 class Arima_sars2pack
@@ -39,10 +38,15 @@ instance of S3 class Arima_sars2pack
 \description{
 Use Rob Hyndman's forecast package to estimate drift in ARIMA models
 }
+\note{
+If ARIMA model fails, another attempt is made with lookback days halved.
+case the latest available date is used
+}
 \examples{
 nyd = nytimes_state_data()
 mb = min_bic(nyd, state.in="New York")
 lkny = Arima_by_state(nyd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
+lkut = Arima_by_state(nyd, "Utah")
 lkny
 plot(lkny)
 usd = jhu_us_data()

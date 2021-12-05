@@ -43,7 +43,22 @@
 #' @format S3 instance
 "min_bic_2020_12_28"
 
-#' a nationwide collection of best state-specific AR/MA model orders, 12/28
+#' a nationwide collection of best state-specific AR/MA model orders, 01/01/21
 #' @docType data
 #' @format S3 instance
 "min_bic_2021_01_01"
+
+#' a nationwide collection of best state-specific AR/MA model orders, 03/21/21
+#' @docType data
+#' @format S3 instance
+"min_bic_2021_03_21"
+
+#' a nationwide collection of best state-specific AR/MA model orders, 12/05/21
+#' @docType data
+#' @format S3 instance
+"min_bic_2021_12_05"
+
+#' alpha3 codes for countries
+#' @docType data
+#' @format named vector
+"a3"

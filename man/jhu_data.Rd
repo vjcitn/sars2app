@@ -45,6 +45,7 @@ source, then modifies column names and munges to long form table.
 \item Although numbers are meant to be cumulative, there are instances where a day's count might
 be less than the prior day due to a reclassification of a case. These are not currently corrected
 in the source data
+\item alpha3Code is added using ISOcodes information
 }
 }
 \examples{

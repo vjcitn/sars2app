@@ -54,7 +54,9 @@
 #' 
 #' @export
 enriched_jhu_data <- function(cols_to_remove = .cols_to_remove, warn=FALSE) {
+    message("sars2app::jhu_data now supplies alpha3 codes")
     res = jhu_data()
+    return(res) # bye!
     cmd = country_metadata()
     res$alpha3Code = countrycode(
         res$CountryRegion,

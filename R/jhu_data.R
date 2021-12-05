@@ -67,6 +67,7 @@
 #' - Although numbers are meant to be cumulative, there are instances where a day's count might
 #'   be less than the prior day due to a reclassification of a case. These are not currently corrected
 #'   in the source data
+#' - alpha3Code is added using ISOcodes information
 #' 
 #' @examples
 #' res = jhu_data()
@@ -84,6 +85,8 @@
 jhu_data <- function() {
     res = dplyr::bind_rows(lapply(c('confirmed', 'deaths', 'recovered'), .munge_data_from_jhu))
     res$date = lubridate::mdy(res$date)
+    res$alpha3Code = sars2app::a3[res$CountryRegion]
+    res$alpha3Code[res$CountryRegion == "US"] = "USA"  # weird
     return(res)
 }
 

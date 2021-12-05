@@ -195,12 +195,14 @@ form_inc_nation = function(src, regtag, max_date=NULL) {
 #' @param lookback_days numeric(1) only uses this many days from most recent in src
 #' @param ARorder order of autoregressive component
 #' @param max_date a date from which to start lookback ... defaults to NULL in which
+#' @note If ARIMA model fails, another attempt is made with lookback days halved.
 #' case the latest available date is used
 #' @return instance of S3 class Arima_sars2pack
 #' @examples
 #' nyd = nytimes_state_data()
 #' mb = min_bic(nyd, state.in="New York")
 #' lkny = Arima_by_state(nyd, ARorder=mb$opt["ARord"], MAorder=mb$opt["MAord"])
+#' lkut = Arima_by_state(nyd, "Utah")
 #' lkny
 #' plot(lkny)
 #' usd = jhu_us_data()
@@ -221,9 +223,17 @@ Arima_by_state = function(src, state.in="New York", MAorder=NULL,
      MAorder = mb$opt["MAord"]
      ARorder = mb$opt["ARord"]
      }
-   .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
+   chk = .Arima_inc(ibyd, state.in=state.in, MAorder=MAorder,
       Difforder=Difforder, basedate=basedate, lookback_days=lookback_days, ARorder=ARorder,
       max_date=max_date, topcall=tc)
+   lk = diag(chk$fit$var.coef)
+   if (any(lk<0)) {
+      message("found inadmissible variance estimate of some ARIMA parameter; halving lookback length")
+      chk = Arima_by_state(src, state.in=state.in, ARorder=ARorder,
+        Difforder=Difforder, basedate=basedate, lookback_days=floor(lookback_days/2), MAorder=MAorder,
+        max_date=max_date)
+      }
+   chk
    }
 
 #' Use Rob Hyndman's forecast package to estimate drift in ARIMA models
@@ -295,7 +305,7 @@ print.Arima_sars2pack = function(x, ...) {
  cat("  call was: ")
  print(x$call)
  cat("  Model estimates: \n")
- summary(x$fit)
+ print(x$fit)
 }
 
 #' @export
