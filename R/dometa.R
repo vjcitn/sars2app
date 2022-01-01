@@ -6,8 +6,8 @@
 #' @param \dots passed to `Arima_by_state`
 #' @examples
 #' nyd = nytimes_state_data()
-#' data(min_bic_2021_12_05)
-#' m1 = run_meta(nyd, opt_parms=min_bic_2021_12_05) # must be relatively current
+#' data(min_bic_2022_01_01)
+#' m1 = run_meta(nyd, opt_parms=min_bic_2022_01_01) # must be relatively current
 #' rmeta::meta.summaries(m1$drifts, m1$se.drifts)
 #' names(m1$drifts) = gsub(".drift", "", names(m1$drifts))
 #' nyind = which(names(m1$drifts) %in% c("New York", "New Jersey"))

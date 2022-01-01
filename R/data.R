@@ -58,6 +58,11 @@
 #' @format S3 instance
 "min_bic_2021_12_05"
 
+#' a nationwide collection of best state-specific AR/MA model orders, 01/01/22
+#' @docType data
+#' @format S3 instance
+"min_bic_2022_01_01"
+
 #' alpha3 codes for countries
 #' @docType data
 #' @format named vector
